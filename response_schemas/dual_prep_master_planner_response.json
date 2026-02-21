@@ -1,0 +1,208 @@
+{
+  "agent_name": "Dual Prep Master Planner",
+  "agent_id": "699969eecf2aa167c05474fc",
+  "description": "An AI academic and career strategist for BTech students preparing simultaneously for campus placements, CAT, GATE, and semester exams. Analyzes timelines, skill levels, mock scores, subject strengths/weaknesses, available study hours, and burnout levels to create realistic, adaptive, high-ROI study plans with cognitively optimized deep-work sessions, weekly/monthly roadmaps, mock analysis strategies, revision cycles, and performance tracking.",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "timeline_analysis": {
+      "upcoming_deadlines": [
+        {
+          "exam": "string",
+          "date": "string",
+          "days_remaining": "number",
+          "urgency": "string"
+        }
+      ],
+      "priority_order": [
+        "string"
+      ]
+    },
+    "weekly_schedule": [
+      {
+        "day": "string",
+        "blocks": [
+          {
+            "time": "string",
+            "subject": "string",
+            "topic": "string",
+            "type": "string",
+            "difficulty": "string"
+          }
+        ]
+      }
+    ],
+    "monthly_roadmap": [
+      {
+        "month": "string",
+        "weeks": [
+          {
+            "week": "number",
+            "focus_areas": [
+              "string"
+            ],
+            "milestones": [
+              "string"
+            ]
+          }
+        ]
+      }
+    ],
+    "priority_tasks": [
+      {
+        "task": "string",
+        "category": "string",
+        "deadline": "string",
+        "reasoning": "string",
+        "estimated_hours": "number"
+      }
+    ],
+    "mock_strategy": {
+      "cat_mocks": {
+        "frequency": "string",
+        "next_mock": "string",
+        "focus_areas": [
+          "string"
+        ]
+      },
+      "gate_mocks": {
+        "frequency": "string",
+        "next_mock": "string",
+        "focus_areas": [
+          "string"
+        ]
+      },
+      "placement_mocks": {
+        "frequency": "string",
+        "next_mock": "string",
+        "focus_areas": [
+          "string"
+        ]
+      }
+    },
+    "performance_metrics": {
+      "weekly_targets": [
+        {
+          "subject": "string",
+          "hours": "number",
+          "topics_count": "number"
+        }
+      ],
+      "monthly_score_targets": [
+        {
+          "exam": "string",
+          "current_score": "string",
+          "target_score": "string"
+        }
+      ],
+      "burnout_risk": "string",
+      "burnout_recommendations": [
+        "string"
+      ]
+    },
+    "key_insights": [
+      "string"
+    ]
+  },
+  "example_response": {
+    "timeline_analysis": {
+      "upcoming_deadlines": [
+        {
+          "exam": "sample string",
+          "date": "sample string",
+          "days_remaining": 0,
+          "urgency": "sample string"
+        }
+      ],
+      "priority_order": [
+        "sample string"
+      ]
+    },
+    "weekly_schedule": [
+      {
+        "day": "sample string",
+        "blocks": [
+          {
+            "time": "sample string",
+            "subject": "sample string",
+            "topic": "sample string",
+            "type": "sample string",
+            "difficulty": "sample string"
+          }
+        ]
+      }
+    ],
+    "monthly_roadmap": [
+      {
+        "month": "sample string",
+        "weeks": [
+          {
+            "week": 0,
+            "focus_areas": [
+              "sample string"
+            ],
+            "milestones": [
+              "sample string"
+            ]
+          }
+        ]
+      }
+    ],
+    "priority_tasks": [
+      {
+        "task": "sample string",
+        "category": "sample string",
+        "deadline": "sample string",
+        "reasoning": "sample string",
+        "estimated_hours": 0
+      }
+    ],
+    "mock_strategy": {
+      "cat_mocks": {
+        "frequency": "sample string",
+        "next_mock": "sample string",
+        "focus_areas": [
+          "sample string"
+        ]
+      },
+      "gate_mocks": {
+        "frequency": "sample string",
+        "next_mock": "sample string",
+        "focus_areas": [
+          "sample string"
+        ]
+      },
+      "placement_mocks": {
+        "frequency": "sample string",
+        "next_mock": "sample string",
+        "focus_areas": [
+          "sample string"
+        ]
+      }
+    },
+    "performance_metrics": {
+      "weekly_targets": [
+        {
+          "subject": "sample string",
+          "hours": 0,
+          "topics_count": 0
+        }
+      ],
+      "monthly_score_targets": [
+        {
+          "exam": "sample string",
+          "current_score": "sample string",
+          "target_score": "sample string"
+        }
+      ],
+      "burnout_risk": "sample string",
+      "burnout_recommendations": [
+        "sample string"
+      ]
+    },
+    "key_insights": [
+      "sample string"
+    ]
+  }
+}

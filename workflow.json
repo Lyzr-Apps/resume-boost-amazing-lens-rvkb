@@ -3,29 +3,29 @@
     {
       "id": "input_node",
       "type": "Input",
-      "label": "User Input (Resume + Job Description)",
+      "label": "Student Profile Input",
       "nodeCategory": "input"
     },
     {
-      "id": "resume_optimization_agent",
+      "id": "dual_prep_planner",
       "type": "Agent",
-      "label": "Resume Optimization Agent",
+      "label": "Dual Prep Master Planner",
       "nodeCategory": "agent"
     },
     {
       "id": "output_node",
       "type": "Output",
-      "label": "Optimization Report",
+      "label": "Study Plan Output",
       "nodeCategory": "end"
     }
   ],
   "edges": [
     {
       "source": "input_node",
-      "target": "resume_optimization_agent"
+      "target": "dual_prep_planner"
     },
     {
-      "source": "resume_optimization_agent",
+      "source": "dual_prep_planner",
       "target": "output_node"
     }
   ]

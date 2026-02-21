@@ -11,192 +11,365 @@ import { Button } from '@/components/ui/button'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
-import { FiSearch, FiEdit3, FiBarChart2, FiType, FiCpu, FiCopy, FiCheck, FiTrash2, FiLoader, FiAlertCircle, FiChevronDown, FiChevronUp, FiArrowRight } from 'react-icons/fi'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import {
+  FiCalendar, FiClock, FiMap, FiTarget, FiTrendingUp, FiZap, FiFileText,
+  FiCopy, FiCheck, FiTrash2, FiLoader, FiAlertCircle, FiChevronDown,
+  FiChevronUp, FiBookOpen, FiActivity, FiCpu, FiUsers,
+  FiBarChart2, FiSend
+} from 'react-icons/fi'
 
 // --- Types ---
-interface KeywordAlignment {
-  matched_keywords: string[]
-  missing_keywords: string[]
-  suggestions: string[]
+interface Deadline {
+  exam: string
+  date: string
+  days_remaining: number
+  urgency: string
 }
 
-interface BulletImprovement {
-  original: string
-  improved: string
+interface TimelineAnalysis {
+  upcoming_deadlines: Deadline[]
+  priority_order: string[]
 }
 
-interface ImpactItem {
-  achievement: string
-  suggestion: string
+interface ScheduleBlock {
+  time: string
+  subject: string
+  topic: string
+  type: string
+  difficulty: string
 }
 
-interface ActionVerb {
-  weak_verb: string
-  stronger_verb: string
-  context: string
+interface DaySchedule {
+  day: string
+  blocks: ScheduleBlock[]
 }
 
-interface IoTProject {
-  title: string
-  description: string
-  estimated_time: string
-  skills: string[]
-  relevance: string
+interface WeekInfo {
+  week: number
+  focus_areas: string[]
+  milestones: string[]
+}
+
+interface MonthRoadmap {
+  month: string
+  weeks: WeekInfo[]
+}
+
+interface PriorityTask {
+  task: string
+  category: string
+  deadline: string
+  reasoning: string
+  estimated_hours: number
+}
+
+interface MockInfo {
+  frequency: string
+  next_mock: string
+  focus_areas: string[]
+}
+
+interface MockStrategy {
+  cat_mocks: MockInfo
+  gate_mocks: MockInfo
+  placement_mocks: MockInfo
+}
+
+interface WeeklyTarget {
+  subject: string
+  hours: number
+  topics_count: number
+}
+
+interface ScoreTarget {
+  exam: string
+  current_score: string
+  target_score: string
+}
+
+interface PerformanceMetrics {
+  weekly_targets: WeeklyTarget[]
+  monthly_score_targets: ScoreTarget[]
+  burnout_risk: string
+  burnout_recommendations: string[]
 }
 
 interface AgentResult {
-  keyword_alignment?: KeywordAlignment
-  bullet_improvements?: BulletImprovement[]
-  impact_quantification?: ImpactItem[]
-  action_verbs?: ActionVerb[]
-  iot_projects?: IoTProject[]
+  timeline_analysis?: TimelineAnalysis
+  weekly_schedule?: DaySchedule[]
+  monthly_roadmap?: MonthRoadmap[]
+  priority_tasks?: PriorityTask[]
+  mock_strategy?: MockStrategy
+  performance_metrics?: PerformanceMetrics
+  key_insights?: string[]
+}
+
+interface FormData {
+  branch: string
+  semester: string
+  studyHours: string
+  burnoutLevel: string
+  placements: boolean
+  cat: boolean
+  gate: boolean
+  semesterDate: string
+  catDate: string
+  gateDate: string
+  placementDate: string
+  dsaLevel: string
+  catScore: string
+  gateScore: string
+  strongSubject: string
+  weakSubject: string
+  labDays: string
+  additionalContext: string
 }
 
 // --- Constants ---
-const AGENT_ID = '699964710fc64800c899bc30'
+const AGENT_ID = '699969eecf2aa167c05474fc'
 
 const LOADING_MESSAGES = [
-  'Analyzing keyword alignment...',
-  'Improving bullet points...',
-  'Quantifying impact...',
-  'Finding stronger action verbs...',
-  'Generating IoT project suggestions...',
+  'Analyzing your timeline and deadlines...',
+  'Building cognitive-optimized study blocks...',
+  'Designing weekly schedule...',
+  'Creating monthly roadmap...',
+  'Calculating priority tasks...',
+  'Formulating mock test strategy...',
+  'Assessing burnout risk and metrics...',
 ]
 
-const SAMPLE_RESUME = `John Doe
-Software Engineer
+const INITIAL_FORM: FormData = {
+  branch: '',
+  semester: '',
+  studyHours: '',
+  burnoutLevel: '',
+  placements: false,
+  cat: false,
+  gate: false,
+  semesterDate: '',
+  catDate: '',
+  gateDate: '',
+  placementDate: '',
+  dsaLevel: '',
+  catScore: '',
+  gateScore: '',
+  strongSubject: '',
+  weakSubject: '',
+  labDays: '',
+  additionalContext: '',
+}
 
-Summary:
-Experienced software developer with 3 years of experience working on web applications and IoT projects. Familiar with JavaScript, Python, and C++. Worked on team projects and helped improve system performance.
+const SAMPLE_FORM: FormData = {
+  branch: 'CSE',
+  semester: '5th',
+  studyHours: '8',
+  burnoutLevel: 'Moderate',
+  placements: true,
+  cat: true,
+  gate: true,
+  semesterDate: '2026-04-07',
+  catDate: '2026-06-21',
+  gateDate: '2026-08-20',
+  placementDate: '2026-05-22',
+  dsaLevel: 'Intermediate',
+  catScore: '78',
+  gateScore: '52',
+  strongSubject: 'Data Structures & Algorithms',
+  weakSubject: 'Aptitude & Verbal Reasoning',
+  labDays: 'Mon, Wed, Fri',
+  additionalContext: 'I have a mini project submission due in 3 weeks. Also planning to participate in a hackathon next month.',
+}
 
-Experience:
-- Worked on the company website using React and Node.js
-- Helped with database optimization tasks
-- Was responsible for testing and fixing bugs
-- Participated in code reviews and team meetings
-- Managed deployment of applications to production servers
-
-Education:
-B.Tech in Computer Science, XYZ University, 2021
-
-Skills:
-JavaScript, Python, React, Node.js, MongoDB, Git, C++, Arduino, Raspberry Pi
-
-Projects:
-- Smart Home System: Built a home automation system using Arduino
-- Weather Dashboard: Created a web app showing weather data`
-
-const SAMPLE_JD = `Software Engineer - IoT & Embedded Systems
-
-We are looking for a talented Software Engineer to join our IoT team. The ideal candidate will have experience with:
-
-Requirements:
-- Strong proficiency in Python, C/C++, and JavaScript
-- Experience with IoT protocols (MQTT, CoAP, HTTP)
-- Familiarity with embedded systems and microcontrollers (ESP32, STM32)
-- Experience with cloud platforms (AWS IoT, Azure IoT Hub)
-- Knowledge of real-time data processing and edge computing
-- Experience with CI/CD pipelines and DevOps practices
-- Strong understanding of RESTful APIs and microservices architecture
-- Excellent problem-solving and communication skills
-
-Nice to have:
-- Experience with TensorFlow Lite or Edge AI
-- Knowledge of RTOS (FreeRTOS)
-- Familiarity with PCB design
-- Published IoT projects or open-source contributions
-
-Responsibilities:
-- Design and develop IoT solutions for industrial applications
-- Optimize firmware for resource-constrained devices
-- Implement secure communication protocols
-- Collaborate with cross-functional teams
-- Mentor junior developers`
-
-const SAMPLE_RESULTS: AgentResult = {
-  keyword_alignment: {
-    matched_keywords: ['Python', 'JavaScript', 'C++', 'React', 'Node.js', 'Arduino', 'IoT', 'Git'],
-    missing_keywords: ['MQTT', 'CoAP', 'ESP32', 'STM32', 'AWS IoT', 'Azure IoT Hub', 'edge computing', 'CI/CD', 'microservices', 'TensorFlow Lite', 'RTOS', 'FreeRTOS'],
-    suggestions: [
-      'Add MQTT and CoAP protocol experience if you have worked with any messaging protocols in IoT projects.',
-      'Mention specific cloud platforms (AWS IoT, Azure IoT) even if exposure was limited.',
-      'Include CI/CD tools you have used (Jenkins, GitHub Actions, GitLab CI).',
-      'Reference microservices architecture if your Node.js work involved service-oriented design.',
-      'Add edge computing concepts if your Arduino/Raspberry Pi projects processed data locally.',
+const SAMPLE_DATA: AgentResult = {
+  timeline_analysis: {
+    upcoming_deadlines: [
+      { exam: 'Semester Exams', date: '2026-04-07', days_remaining: 45, urgency: 'High' },
+      { exam: 'Placement Season', date: '2026-05-22', days_remaining: 90, urgency: 'High' },
+      { exam: 'CAT 2026', date: '2026-06-21', days_remaining: 120, urgency: 'Medium' },
+      { exam: 'GATE 2027', date: '2026-08-20', days_remaining: 180, urgency: 'Low' },
+    ],
+    priority_order: [
+      'Semester Exams (45 days - immediate focus)',
+      'Placement Prep - DSA & CS Fundamentals (90 days)',
+      'CAT Quantitative & Verbal (120 days)',
+      'GATE Core Subjects (180 days - long-term)',
     ],
   },
-  bullet_improvements: [
+  weekly_schedule: [
     {
-      original: 'Worked on the company website using React and Node.js',
-      improved: 'Architected and developed a full-stack web application using React and Node.js, serving 10,000+ daily active users with 99.9% uptime',
+      day: 'Monday',
+      blocks: [
+        { time: '6:00-7:30', subject: 'CAT', topic: 'Quantitative Aptitude - Arithmetic', type: 'Practice', difficulty: 'Medium' },
+        { time: '8:00-10:00', subject: 'Semester', topic: 'Computer Networks - TCP/IP', type: 'Lecture', difficulty: 'Medium' },
+        { time: '14:00-16:00', subject: 'Placement', topic: 'DSA - Binary Trees & BST', type: 'Practice', difficulty: 'Hard' },
+        { time: '16:30-17:30', subject: 'GATE', topic: 'Digital Logic - Combinational Circuits', type: 'Revision', difficulty: 'Easy' },
+        { time: '20:00-21:00', subject: 'CAT', topic: 'Reading Comprehension Practice', type: 'Practice', difficulty: 'Medium' },
+      ],
     },
     {
-      original: 'Helped with database optimization tasks',
-      improved: 'Optimized MongoDB query performance by implementing indexing strategies and aggregation pipelines, reducing average response time by 40%',
+      day: 'Tuesday',
+      blocks: [
+        { time: '6:00-7:30', subject: 'Placement', topic: 'DSA - Graph Algorithms', type: 'Practice', difficulty: 'Hard' },
+        { time: '9:00-11:00', subject: 'Semester', topic: 'Operating Systems - Scheduling', type: 'Lecture', difficulty: 'Medium' },
+        { time: '14:00-15:30', subject: 'GATE', topic: 'Theory of Computation - DFA/NFA', type: 'Practice', difficulty: 'Hard' },
+        { time: '16:00-17:00', subject: 'CAT', topic: 'Logical Reasoning - Arrangements', type: 'Practice', difficulty: 'Medium' },
+        { time: '20:00-21:30', subject: 'Placement', topic: 'System Design Basics', type: 'Revision', difficulty: 'Medium' },
+      ],
     },
     {
-      original: 'Was responsible for testing and fixing bugs',
-      improved: 'Spearheaded quality assurance initiatives by implementing automated testing suites (Jest, Cypress), reducing production bugs by 60%',
+      day: 'Wednesday',
+      blocks: [
+        { time: '6:00-7:30', subject: 'CAT', topic: 'Data Interpretation - Charts & Tables', type: 'Practice', difficulty: 'Medium' },
+        { time: '8:00-10:00', subject: 'Semester', topic: 'DBMS - Normalization', type: 'Lecture', difficulty: 'Medium' },
+        { time: '14:00-16:00', subject: 'Placement', topic: 'DSA - Dynamic Programming', type: 'Practice', difficulty: 'Hard' },
+        { time: '16:30-17:30', subject: 'GATE', topic: 'Computer Organization - Pipeline', type: 'Revision', difficulty: 'Medium' },
+      ],
     },
     {
-      original: 'Participated in code reviews and team meetings',
-      improved: 'Led bi-weekly code review sessions for a team of 8 engineers, establishing coding standards that improved code maintainability by 35%',
+      day: 'Thursday',
+      blocks: [
+        { time: '6:00-7:30', subject: 'Placement', topic: 'DSA - Heap & Priority Queue', type: 'Practice', difficulty: 'Medium' },
+        { time: '9:00-11:00', subject: 'Semester', topic: 'Software Engineering - SDLC Models', type: 'Lecture', difficulty: 'Easy' },
+        { time: '14:00-15:30', subject: 'GATE', topic: 'Discrete Mathematics - Graph Theory', type: 'Practice', difficulty: 'Hard' },
+        { time: '16:00-17:30', subject: 'CAT', topic: 'Verbal Ability - Para Jumbles', type: 'Practice', difficulty: 'Medium' },
+        { time: '20:00-21:00', subject: 'Semester', topic: 'Previous Year Paper Solving', type: 'Revision', difficulty: 'Medium' },
+      ],
     },
     {
-      original: 'Managed deployment of applications to production servers',
-      improved: 'Engineered CI/CD pipelines using GitHub Actions for automated deployment to AWS, reducing release cycles from 2 weeks to 2 days',
+      day: 'Friday',
+      blocks: [
+        { time: '6:00-7:30', subject: 'CAT', topic: 'QA - Number Systems & Algebra', type: 'Practice', difficulty: 'Hard' },
+        { time: '8:00-10:00', subject: 'Semester', topic: 'Computer Networks - Routing', type: 'Lecture', difficulty: 'Medium' },
+        { time: '14:00-16:00', subject: 'Placement', topic: 'DSA - Sliding Window & Two Pointer', type: 'Practice', difficulty: 'Medium' },
+        { time: '16:30-17:30', subject: 'GATE', topic: 'Compiler Design - Parsing', type: 'Revision', difficulty: 'Hard' },
+      ],
+    },
+    {
+      day: 'Saturday',
+      blocks: [
+        { time: '7:00-9:00', subject: 'Placement', topic: 'Mock Interview Practice', type: 'Practice', difficulty: 'Hard' },
+        { time: '10:00-12:00', subject: 'CAT', topic: 'Full Section Mock - QA', type: 'Practice', difficulty: 'Hard' },
+        { time: '14:00-16:00', subject: 'GATE', topic: 'Subject-wise Test - Algorithms', type: 'Practice', difficulty: 'Hard' },
+        { time: '17:00-18:00', subject: 'Semester', topic: 'Revision - OS & Networks', type: 'Revision', difficulty: 'Medium' },
+      ],
+    },
+    {
+      day: 'Sunday',
+      blocks: [
+        { time: '8:00-10:00', subject: 'CAT', topic: 'Full Mock Test Analysis', type: 'Revision', difficulty: 'Medium' },
+        { time: '10:30-12:00', subject: 'Placement', topic: 'Competitive Coding Contest', type: 'Practice', difficulty: 'Hard' },
+        { time: '14:00-15:00', subject: 'GATE', topic: 'Weak Area Revision', type: 'Revision', difficulty: 'Medium' },
+        { time: '15:30-16:30', subject: 'Break', topic: 'Rest & Recovery', type: 'Buffer', difficulty: 'Easy' },
+      ],
     },
   ],
-  impact_quantification: [
+  monthly_roadmap: [
     {
-      achievement: 'Smart Home System using Arduino',
-      suggestion: 'Quantify: "Engineered a smart home automation system integrating 12 IoT sensors via MQTT protocol, achieving <200ms response latency and supporting 50+ concurrent device connections"',
+      month: 'March 2026',
+      weeks: [
+        { week: 1, focus_areas: ['Semester - Networks & DBMS', 'DSA - Trees & Graphs'], milestones: ['Complete Binary Tree problems (50+)', 'Finish Networks Unit 1-2'] },
+        { week: 2, focus_areas: ['Semester - OS Scheduling', 'CAT QA - Arithmetic'], milestones: ['Solve 100 CAT QA problems', 'OS mid-semester prep done'] },
+        { week: 3, focus_areas: ['Semester Revision Sprint', 'Placement DSA - DP Basics'], milestones: ['Complete semester revision notes', 'Solve 30 DP problems'] },
+        { week: 4, focus_areas: ['Semester Exams Prep', 'Light CAT Practice'], milestones: ['All semester PYQs solved', 'Take 1 CAT sectional mock'] },
+      ],
     },
     {
-      achievement: 'Weather Dashboard web app',
-      suggestion: 'Quantify: "Developed a real-time weather monitoring dashboard processing 5,000+ API calls daily, with data visualization for 15 weather parameters across 100+ locations"',
+      month: 'April 2026',
+      weeks: [
+        { week: 1, focus_areas: ['Semester Exams', 'Light DSA Revision'], milestones: ['Semester exams completed', 'Maintain DSA streak'] },
+        { week: 2, focus_areas: ['Placement - Full DSA Sprint', 'CAT - LR & DI'], milestones: ['Complete 200 DSA problems total', 'Score 85+ in CAT LR mock'] },
+        { week: 3, focus_areas: ['Placement - CS Fundamentals', 'GATE - Core Subjects Start'], milestones: ['OS + DBMS + Networks revision done', 'GATE syllabus mapping complete'] },
+        { week: 4, focus_areas: ['Placement Mock Interviews', 'CAT Full Mocks'], milestones: ['Complete 5 mock interviews', 'Take 2 full CAT mocks'] },
+      ],
     },
     {
-      achievement: 'System performance improvement',
-      suggestion: 'Quantify: "Improved system performance by X% through specific optimization technique, resulting in $Y cost savings or Z% faster processing"',
+      month: 'May 2026',
+      weeks: [
+        { week: 1, focus_areas: ['Placement Season Prep', 'CAT - Verbal Focus'], milestones: ['Resume & cover letter finalized', 'RC accuracy above 80%'] },
+        { week: 2, focus_areas: ['Placement Interviews', 'GATE - TOC & Compiler Design'], milestones: ['Attend 3+ placement drives', 'Complete TOC syllabus'] },
+        { week: 3, focus_areas: ['Placement + CAT Balance', 'GATE Practice Tests'], milestones: ['CAT mock score: 85+ percentile', 'GATE subject test score: 60+'] },
+        { week: 4, focus_areas: ['CAT Intensive', 'GATE Discrete Math'], milestones: ['Take 3 full CAT mocks', 'Complete discrete math syllabus'] },
+      ],
     },
   ],
-  action_verbs: [
-    { weak_verb: 'Worked on', stronger_verb: 'Architected', context: 'Use when describing system design and development of the company website' },
-    { weak_verb: 'Helped with', stronger_verb: 'Optimized', context: 'Use when describing database performance improvements' },
-    { weak_verb: 'Was responsible for', stronger_verb: 'Spearheaded', context: 'Use when describing testing and quality assurance leadership' },
-    { weak_verb: 'Participated in', stronger_verb: 'Led', context: 'Use when describing code reviews if you drove the process forward' },
-    { weak_verb: 'Managed', stronger_verb: 'Engineered', context: 'Use when describing deployment pipeline creation and management' },
-    { weak_verb: 'Built', stronger_verb: 'Pioneered', context: 'Use when describing the IoT home automation project from scratch' },
-    { weak_verb: 'Created', stronger_verb: 'Developed', context: 'Use for the weather dashboard, implies more technical depth' },
+  priority_tasks: [
+    { task: 'Complete Computer Networks Unit 1-3 revision', category: 'Semester', deadline: '2026-03-15', reasoning: 'Semester exams are nearest deadline; Networks carries high weightage', estimated_hours: 12 },
+    { task: 'Solve 50 Binary Tree + BST problems on LeetCode', category: 'Placement', deadline: '2026-03-10', reasoning: 'Trees are fundamental to DSA rounds; builds strong recursive thinking', estimated_hours: 15 },
+    { task: 'Complete CAT QA Arithmetic module', category: 'CAT', deadline: '2026-03-20', reasoning: 'Arithmetic is 30-40% of QA section; quick wins for percentile boost', estimated_hours: 10 },
+    { task: 'Revise Operating Systems scheduling algorithms', category: 'Semester', deadline: '2026-03-12', reasoning: 'High-priority topic for both semester and GATE exams', estimated_hours: 6 },
+    { task: 'Take first GATE subject-wise test (Algorithms)', category: 'GATE', deadline: '2026-03-25', reasoning: 'Baseline assessment needed to calibrate GATE prep intensity', estimated_hours: 3 },
+    { task: 'Practice 20 Reading Comprehension passages', category: 'CAT', deadline: '2026-03-18', reasoning: 'Verbal is identified weak area; needs consistent daily practice', estimated_hours: 8 },
+    { task: 'Build mini project for submission', category: 'Semester', deadline: '2026-03-14', reasoning: 'Hard deadline; cannot be postponed without academic penalty', estimated_hours: 20 },
+    { task: 'Complete System Design fundamentals notes', category: 'Placement', deadline: '2026-03-30', reasoning: 'Many companies ask system design in interviews; need baseline knowledge', estimated_hours: 8 },
   ],
-  iot_projects: [
-    {
-      title: 'Industrial Predictive Maintenance Monitor',
-      description: 'Build a vibration and temperature monitoring system for industrial equipment using ESP32 microcontrollers. Implement edge computing for anomaly detection and stream processed data to AWS IoT Core via MQTT. Create a real-time dashboard for maintenance alerts.',
-      estimated_time: '4-6 weeks',
-      skills: ['ESP32', 'MQTT', 'AWS IoT Core', 'Python', 'Edge Computing', 'TensorFlow Lite'],
-      relevance: 'Directly addresses the JD requirements for IoT protocols, cloud platforms, edge computing, and embedded systems experience.',
+  mock_strategy: {
+    cat_mocks: {
+      frequency: 'Weekly - Every Saturday',
+      next_mock: '2026-03-08',
+      focus_areas: ['Quantitative Aptitude - Arithmetic & Algebra', 'Data Interpretation - Caselets', 'Reading Comprehension - Inference-based', 'Logical Reasoning - Arrangements & Puzzles'],
     },
-    {
-      title: 'Smart Agriculture Sensor Network',
-      description: 'Design a mesh network of soil moisture, pH, and weather sensors using STM32 microcontrollers running FreeRTOS. Implement CoAP for resource-constrained communication and deploy data processing on Azure IoT Hub.',
-      estimated_time: '6-8 weeks',
-      skills: ['STM32', 'FreeRTOS', 'CoAP', 'Azure IoT Hub', 'C/C++', 'Microservices'],
-      relevance: 'Covers RTOS, embedded systems, CoAP protocol, and cloud platform requirements from the job description.',
+    gate_mocks: {
+      frequency: 'Bi-weekly - Alternate Saturdays',
+      next_mock: '2026-03-15',
+      focus_areas: ['Algorithms & Data Structures', 'Theory of Computation', 'Digital Logic & Computer Organization', 'Discrete Mathematics'],
     },
-    {
-      title: 'Connected Fleet Tracking System',
-      description: 'Develop a GPS-based fleet tracking solution with real-time location streaming over MQTT. Implement geofencing logic on edge devices and build RESTful APIs for fleet management operations.',
-      estimated_time: '3-4 weeks',
-      skills: ['MQTT', 'RESTful APIs', 'Python', 'CI/CD', 'Docker', 'GPS/GNSS'],
-      relevance: 'Demonstrates real-time data processing, API design, and DevOps skills mentioned in the requirements.',
+    placement_mocks: {
+      frequency: '3x per week - Coding contests',
+      next_mock: '2026-03-05',
+      focus_areas: ['Dynamic Programming patterns', 'Graph traversal problems', 'Array manipulation techniques', 'Behavioral interview prep'],
     },
+  },
+  performance_metrics: {
+    weekly_targets: [
+      { subject: 'DSA / Placement', hours: 14, topics_count: 8 },
+      { subject: 'CAT Preparation', hours: 10, topics_count: 5 },
+      { subject: 'Semester Subjects', hours: 12, topics_count: 6 },
+      { subject: 'GATE Core', hours: 8, topics_count: 4 },
+      { subject: 'Mock Tests & Analysis', hours: 6, topics_count: 3 },
+      { subject: 'Rest & Buffer', hours: 6, topics_count: 0 },
+    ],
+    monthly_score_targets: [
+      { exam: 'CAT Mock', current_score: '78 percentile', target_score: '90 percentile' },
+      { exam: 'GATE Subject Test', current_score: '52/100', target_score: '70/100' },
+      { exam: 'LeetCode Rating', current_score: '1450', target_score: '1700' },
+      { exam: 'Semester GPA', current_score: '7.8', target_score: '8.5+' },
+    ],
+    burnout_risk: 'Moderate',
+    burnout_recommendations: [
+      'Maintain strict 6-hour sleep minimum; aim for 7 hours on non-exam weeks',
+      'Schedule 1 full rest day every 2 weeks with zero academic work',
+      'Use the Pomodoro technique (50 min focus, 10 min break) for deep-work sessions',
+      'Alternate between high-intensity (DSA/Mocks) and low-intensity (revision/reading) blocks',
+      'Track energy levels daily; shift difficult topics to your peak cognitive hours',
+    ],
+  },
+  key_insights: [
+    'Your semester exams are the most imminent deadline at 45 days. Prioritize these for the next 3 weeks, but maintain DSA practice momentum to avoid regression.',
+    'With an intermediate DSA level and 8 hours/day, you can realistically target 200+ LeetCode problems before placement season. Focus on patterns, not just problem count.',
+    'CAT at 78 percentile shows good potential. A focused push on Verbal (your weak area) can yield 8-10 percentile improvement in 2 months.',
+    'GATE prep at 180 days out gives you the most runway. Use it for long-term concept building, not cramming. 2-3 hours daily is sufficient at this stage.',
+    'Your lab days (Mon, Wed, Fri) will fragment study blocks. Use these afternoons for lighter revision, and save deep-work sessions for Tue/Thu/Sat.',
+    'The mini project deadline overlaps with exam prep. Allocate focused 3-hour blocks for it this week to avoid last-minute panic.',
+    'Cross-preparation synergies exist: OS and DBMS prep serves both Semester and GATE. DSA serves both Placements and GATE. Leverage these overlaps to maximize ROI.',
   ],
 }
+
+const TAB_CONFIG = [
+  { id: 'timeline', label: 'Timeline & Priorities', icon: FiCalendar },
+  { id: 'weekly', label: 'Weekly Schedule', icon: FiClock },
+  { id: 'roadmap', label: 'Monthly Roadmap', icon: FiMap },
+  { id: 'mocks', label: 'Mock Strategy', icon: FiTarget },
+  { id: 'metrics', label: 'Performance', icon: FiTrendingUp },
+  { id: 'insights', label: 'Key Insights', icon: FiZap },
+  { id: 'fullplan', label: 'Full Plan', icon: FiFileText },
+] as const
 
 // --- ErrorBoundary ---
 class ErrorBoundary extends React.Component<
@@ -292,17 +465,64 @@ function renderMarkdown(text: string) {
   )
 }
 
-// --- Tab Config ---
-const TAB_CONFIG = [
-  { id: 'keywords', label: 'Keywords', icon: FiSearch },
-  { id: 'bullets', label: 'Bullets', icon: FiEdit3 },
-  { id: 'impact', label: 'Impact', icon: FiBarChart2 },
-  { id: 'verbs', label: 'Verbs', icon: FiType },
-  { id: 'projects', label: 'Projects', icon: FiCpu },
-] as const
+// --- Helper: urgency color ---
+function urgencyColor(urgency: string): string {
+  const u = (urgency ?? '').toLowerCase()
+  if (u === 'critical') return 'bg-red-100 text-red-800 border-red-200'
+  if (u === 'high') return 'bg-orange-100 text-orange-800 border-orange-200'
+  if (u === 'medium') return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+  if (u === 'low') return 'bg-green-100 text-green-800 border-green-200'
+  return 'bg-secondary text-secondary-foreground'
+}
 
-// --- Sub-components ---
+function burnoutColor(risk: string): string {
+  const r = (risk ?? '').toLowerCase()
+  if (r === 'critical') return 'bg-red-100 text-red-800 border-red-200'
+  if (r === 'high') return 'bg-orange-100 text-orange-800 border-orange-200'
+  if (r === 'moderate') return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+  if (r === 'low') return 'bg-green-100 text-green-800 border-green-200'
+  return 'bg-secondary text-secondary-foreground'
+}
 
+function subjectColor(subject: string): string {
+  const s = (subject ?? '').toLowerCase()
+  if (s.includes('placement') || s.includes('dsa')) return 'bg-blue-50 border-blue-200 text-blue-900'
+  if (s.includes('cat')) return 'bg-purple-50 border-purple-200 text-purple-900'
+  if (s.includes('gate')) return 'bg-green-50 border-green-200 text-green-900'
+  if (s.includes('semester')) return 'bg-amber-50 border-amber-200 text-amber-900'
+  if (s.includes('break') || s.includes('buffer') || s.includes('rest')) return 'bg-gray-50 border-gray-200 text-gray-600'
+  return 'bg-secondary/50 border-border text-foreground'
+}
+
+function subjectBadgeColor(subject: string): string {
+  const s = (subject ?? '').toLowerCase()
+  if (s.includes('placement') || s.includes('dsa')) return 'bg-blue-100 text-blue-800 border-blue-200'
+  if (s.includes('cat')) return 'bg-purple-100 text-purple-800 border-purple-200'
+  if (s.includes('gate')) return 'bg-green-100 text-green-800 border-green-200'
+  if (s.includes('semester')) return 'bg-amber-100 text-amber-800 border-amber-200'
+  if (s.includes('mock')) return 'bg-pink-100 text-pink-800 border-pink-200'
+  if (s.includes('rest') || s.includes('buffer')) return 'bg-gray-100 text-gray-600 border-gray-200'
+  return 'bg-secondary text-secondary-foreground'
+}
+
+function categoryBadgeColor(cat: string): string {
+  const c = (cat ?? '').toLowerCase()
+  if (c === 'placement') return 'bg-blue-100 text-blue-800 border-blue-200'
+  if (c === 'cat') return 'bg-purple-100 text-purple-800 border-purple-200'
+  if (c === 'gate') return 'bg-green-100 text-green-800 border-green-200'
+  if (c === 'semester') return 'bg-amber-100 text-amber-800 border-amber-200'
+  return 'bg-secondary text-secondary-foreground'
+}
+
+function difficultyIndicator(difficulty: string): React.ReactNode {
+  const d = (difficulty ?? '').toLowerCase()
+  if (d === 'hard') return <span className="text-xs text-red-600 font-mono">HRD</span>
+  if (d === 'medium') return <span className="text-xs text-yellow-600 font-mono">MED</span>
+  if (d === 'easy') return <span className="text-xs text-green-600 font-mono">EZ</span>
+  return <span className="text-xs text-muted-foreground font-mono">{difficulty ?? ''}</span>
+}
+
+// --- CopyButton ---
 function CopyButton({ text, label }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false)
 
@@ -335,326 +555,25 @@ function CopyButton({ text, label }: { text: string; label?: string }) {
   )
 }
 
-function KeywordsTab({ data }: { data?: KeywordAlignment }) {
-  const matched = Array.isArray(data?.matched_keywords) ? data.matched_keywords : []
-  const missing = Array.isArray(data?.missing_keywords) ? data.missing_keywords : []
-  const suggestions = Array.isArray(data?.suggestions) ? data.suggestions : []
-
-  const fullText = [
-    'MATCHED KEYWORDS:',
-    matched.join(', '),
-    '',
-    'MISSING KEYWORDS:',
-    missing.join(', '),
-    '',
-    'SUGGESTIONS:',
-    ...suggestions.map((s, i) => `${i + 1}. ${s}`),
-  ].join('\n')
-
-  return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h3 className="font-serif text-lg font-bold tracking-tight">Keyword Analysis</h3>
-        <CopyButton text={fullText} label="Copy All" />
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Matched Keywords</CardTitle>
-            <CardDescription className="text-xs">{matched.length} keywords found in your resume</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {matched.length > 0 ? (
-                matched.map((kw, i) => (
-                  <Badge key={i} className="bg-green-100 text-green-800 border-green-200 hover:bg-green-100">{kw}</Badge>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">No matched keywords found.</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Missing Keywords</CardTitle>
-            <CardDescription className="text-xs">{missing.length} keywords to add to your resume</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-wrap gap-2">
-              {missing.length > 0 ? (
-                missing.map((kw, i) => (
-                  <Badge key={i} className="bg-amber-100 text-amber-800 border-amber-200 hover:bg-amber-100">{kw}</Badge>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground">No missing keywords.</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {suggestions.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Suggestions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="space-y-3">
-              {suggestions.map((s, i) => (
-                <li key={i} className="flex items-start gap-3 text-sm leading-relaxed">
-                  <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center bg-secondary text-secondary-foreground text-xs font-medium mt-0.5">{i + 1}</span>
-                  <span>{s}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  )
-}
-
-function BulletsTab({ data }: { data?: BulletImprovement[] }) {
-  const items = Array.isArray(data) ? data : []
-
-  const fullText = items
-    .map((item, i) => `${i + 1}. Original: ${item.original}\n   Improved: ${item.improved}`)
-    .join('\n\n')
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="font-serif text-lg font-bold tracking-tight">Bullet Point Improvements</h3>
-        <CopyButton text={fullText} label="Copy All" />
-      </div>
-
-      {items.length > 0 ? (
-        <div className="space-y-4">
-          {items.map((item, i) => (
-            <Card key={i}>
-              <CardContent className="p-0">
-                <div className="grid grid-cols-1 lg:grid-cols-2 divide-y lg:divide-y-0 lg:divide-x divide-border">
-                  <div className="p-5 bg-muted/40">
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Original</span>
-                    </div>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{item?.original ?? ''}</p>
-                  </div>
-                  <div className="p-5">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium uppercase tracking-wide text-foreground">Improved</span>
-                      <CopyButton text={item?.improved ?? ''} />
-                    </div>
-                    <p className="text-sm leading-relaxed font-medium">{item?.improved ?? ''}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">No bullet improvements available.</p>
-      )}
-    </div>
-  )
-}
-
-function ImpactTab({ data }: { data?: ImpactItem[] }) {
-  const items = Array.isArray(data) ? data : []
-
-  const fullText = items
-    .map((item, i) => `${i + 1}. Achievement: ${item.achievement}\n   Suggestion: ${item.suggestion}`)
-    .join('\n\n')
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="font-serif text-lg font-bold tracking-tight">Impact Quantification</h3>
-        <CopyButton text={fullText} label="Copy All" />
-      </div>
-
-      {items.length > 0 ? (
-        <div className="space-y-4">
-          {items.map((item, i) => (
-            <Card key={i}>
-              <CardContent className="p-5 space-y-3">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-1">
-                      <FiBarChart2 className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Achievement</span>
-                    </div>
-                    <p className="text-sm font-medium">{item?.achievement ?? ''}</p>
-                  </div>
-                  <CopyButton text={item?.suggestion ?? ''} />
-                </div>
-                <Separator />
-                <div>
-                  <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Suggestion</span>
-                  <p className="text-sm leading-relaxed mt-1">{item?.suggestion ?? ''}</p>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">No impact quantification suggestions available.</p>
-      )}
-    </div>
-  )
-}
-
-function VerbsTab({ data }: { data?: ActionVerb[] }) {
-  const items = Array.isArray(data) ? data : []
-
-  const fullText = items
-    .map((item) => `${item.weak_verb} -> ${item.stronger_verb} (${item.context})`)
-    .join('\n')
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="font-serif text-lg font-bold tracking-tight">Action Verb Upgrades</h3>
-        <CopyButton text={fullText} label="Copy All" />
-      </div>
-
-      {items.length > 0 ? (
-        <Card>
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b bg-muted/40">
-                    <th className="text-left p-4 font-medium uppercase tracking-wide text-xs text-muted-foreground">Weak Verb</th>
-                    <th className="text-center p-4 w-12"></th>
-                    <th className="text-left p-4 font-medium uppercase tracking-wide text-xs text-muted-foreground">Stronger Verb</th>
-                    <th className="text-left p-4 font-medium uppercase tracking-wide text-xs text-muted-foreground">Context</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {items.map((item, i) => (
-                    <tr key={i} className="border-b last:border-b-0">
-                      <td className="p-4 text-muted-foreground line-through">{item?.weak_verb ?? ''}</td>
-                      <td className="p-4 text-center">
-                        <FiArrowRight className="h-4 w-4 text-muted-foreground mx-auto" />
-                      </td>
-                      <td className="p-4 font-semibold">{item?.stronger_verb ?? ''}</td>
-                      <td className="p-4 text-muted-foreground text-xs leading-relaxed">{item?.context ?? ''}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <p className="text-sm text-muted-foreground">No action verb suggestions available.</p>
-      )}
-    </div>
-  )
-}
-
-function ProjectsTab({ data }: { data?: IoTProject[] }) {
-  const items = Array.isArray(data) ? data : []
-  const [expandedIdx, setExpandedIdx] = useState<number | null>(null)
-
-  const fullText = items
-    .map((item) => `${item.title}\n${item.description}\nTime: ${item.estimated_time}\nSkills: ${Array.isArray(item.skills) ? item.skills.join(', ') : ''}\nRelevance: ${item.relevance}`)
-    .join('\n\n---\n\n')
-
-  return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h3 className="font-serif text-lg font-bold tracking-tight">IoT Project Suggestions</h3>
-        <CopyButton text={fullText} label="Copy All" />
-      </div>
-
-      {items.length > 0 ? (
-        <div className="space-y-4">
-          {items.map((item, i) => {
-            const isExpanded = expandedIdx === i
-            const skills = Array.isArray(item?.skills) ? item.skills : []
-            return (
-              <Card key={i}>
-                <CardContent className="p-0">
-                  <button
-                    onClick={() => setExpandedIdx(isExpanded ? null : i)}
-                    className="w-full text-left p-5 flex items-start justify-between gap-4 hover:bg-muted/30 transition-colors"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-1">
-                        <FiCpu className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <h4 className="font-semibold text-sm">{item?.title ?? 'Untitled Project'}</h4>
-                      </div>
-                      <div className="flex items-center gap-3 ml-7 text-xs text-muted-foreground">
-                        <span>{item?.estimated_time ?? 'N/A'}</span>
-                        <span className="w-1 h-1 rounded-full bg-muted-foreground" />
-                        <span>{skills.length} skills</span>
-                      </div>
-                    </div>
-                    {isExpanded ? (
-                      <FiChevronUp className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                    ) : (
-                      <FiChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0 mt-0.5" />
-                    )}
-                  </button>
-
-                  {isExpanded && (
-                    <div className="px-5 pb-5 space-y-4 border-t">
-                      <div className="pt-4">
-                        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Description</span>
-                        <p className="text-sm leading-relaxed mt-1">{item?.description ?? ''}</p>
-                      </div>
-
-                      <div>
-                        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Skills</span>
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {skills.map((skill, si) => (
-                            <Badge key={si} variant="secondary">{skill}</Badge>
-                          ))}
-                        </div>
-                      </div>
-
-                      <div>
-                        <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Relevance to Job</span>
-                        <p className="text-sm leading-relaxed mt-1 text-muted-foreground">{item?.relevance ?? ''}</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            )
-          })}
-        </div>
-      ) : (
-        <p className="text-sm text-muted-foreground">No project suggestions available.</p>
-      )}
-    </div>
-  )
-}
-
+// --- LoadingState ---
 function LoadingState() {
   const [messageIdx, setMessageIdx] = useState(0)
 
   useEffect(() => {
     const interval = setInterval(() => {
       setMessageIdx((prev) => (prev + 1) % LOADING_MESSAGES.length)
-    }, 2500)
+    }, 2200)
     return () => clearInterval(interval)
   }, [])
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3 justify-center py-4">
+      <div className="flex items-center gap-3 justify-center py-6">
         <FiLoader className="h-5 w-5 animate-spin text-foreground" />
         <p className="text-sm font-medium">{LOADING_MESSAGES[messageIdx]}</p>
       </div>
-
-      <div className="space-y-4">
-        {[1, 2, 3].map((n) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {[1, 2, 3, 4, 5, 6].map((n) => (
           <Card key={n}>
             <CardContent className="p-5 space-y-3">
               <Skeleton className="h-4 w-1/3" />
@@ -669,6 +588,598 @@ function LoadingState() {
   )
 }
 
+// --- Tab: Timeline & Priorities ---
+function TimelineTab({ data }: { data: AgentResult }) {
+  const deadlines = Array.isArray(data?.timeline_analysis?.upcoming_deadlines) ? data.timeline_analysis.upcoming_deadlines : []
+  const priorityOrder = Array.isArray(data?.timeline_analysis?.priority_order) ? data.timeline_analysis.priority_order : []
+  const tasks = Array.isArray(data?.priority_tasks) ? data.priority_tasks : []
+  const [expandedTask, setExpandedTask] = useState<number | null>(null)
+
+  const sectionText = [
+    'DEADLINES:',
+    ...deadlines.map(d => `- ${d?.exam ?? ''}: ${d?.date ?? ''} (${d?.days_remaining ?? 0} days, ${d?.urgency ?? ''})`),
+    '',
+    'PRIORITY ORDER:',
+    ...priorityOrder.map((p, i) => `${i + 1}. ${p}`),
+    '',
+    'PRIORITY TASKS:',
+    ...tasks.map(t => `- ${t?.task ?? ''} [${t?.category ?? ''}] Due: ${t?.deadline ?? ''} (${t?.estimated_hours ?? 0}h) - ${t?.reasoning ?? ''}`),
+  ].join('\n')
+
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h3 className="font-serif text-lg font-bold" style={{ letterSpacing: '-0.02em' }}>Timeline & Priorities</h3>
+        <CopyButton text={sectionText} label="Copy Section" />
+      </div>
+
+      {/* Deadlines */}
+      <div>
+        <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Upcoming Deadlines</h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          {deadlines.map((d, i) => (
+            <Card key={i}>
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold">{d?.exam ?? ''}</span>
+                  <Badge className={urgencyColor(d?.urgency ?? '')}>{d?.urgency ?? ''}</Badge>
+                </div>
+                <div className="text-xs text-muted-foreground">{d?.date ?? ''}</div>
+                <div className="text-2xl font-mono font-bold">{d?.days_remaining ?? 0}</div>
+                <div className="text-xs text-muted-foreground">days remaining</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Priority Order */}
+      {priorityOrder.length > 0 && (
+        <div>
+          <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Priority Order</h4>
+          <Card>
+            <CardContent className="p-4">
+              <ol className="space-y-2">
+                {priorityOrder.map((p, i) => (
+                  <li key={i} className="flex items-start gap-3 text-sm">
+                    <span className="flex-shrink-0 w-6 h-6 flex items-center justify-center bg-primary text-primary-foreground text-xs font-bold">{i + 1}</span>
+                    <span className="leading-relaxed">{p}</span>
+                  </li>
+                ))}
+              </ol>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Priority Tasks */}
+      {tasks.length > 0 && (
+        <div>
+          <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Priority Tasks</h4>
+          <div className="space-y-2">
+            {tasks.map((t, i) => (
+              <Card key={i}>
+                <CardContent className="p-0">
+                  <button
+                    onClick={() => setExpandedTask(expandedTask === i ? null : i)}
+                    className="w-full text-left p-4 flex items-center justify-between gap-3 hover:bg-muted/30 transition-colors"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-semibold">{t?.task ?? ''}</span>
+                        <Badge className={categoryBadgeColor(t?.category ?? '')}>{t?.category ?? ''}</Badge>
+                      </div>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                        <span>Due: {t?.deadline ?? ''}</span>
+                        <span className="w-1 h-1 rounded-full bg-muted-foreground" />
+                        <span className="font-mono">{t?.estimated_hours ?? 0}h</span>
+                      </div>
+                    </div>
+                    {expandedTask === i ? (
+                      <FiChevronUp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    ) : (
+                      <FiChevronDown className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    )}
+                  </button>
+                  {expandedTask === i && (
+                    <div className="px-4 pb-4 border-t pt-3">
+                      <span className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Reasoning</span>
+                      <p className="text-sm mt-1 leading-relaxed">{t?.reasoning ?? ''}</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// --- Tab: Weekly Schedule ---
+function WeeklyTab({ data }: { data: AgentResult }) {
+  const schedule = Array.isArray(data?.weekly_schedule) ? data.weekly_schedule : []
+
+  const sectionText = schedule.map(day => {
+    const blocks = Array.isArray(day?.blocks) ? day.blocks : []
+    return `${day?.day ?? ''}:\n${blocks.map(b => `  ${b?.time ?? ''} | ${b?.subject ?? ''} | ${b?.topic ?? ''} (${b?.type ?? ''}, ${b?.difficulty ?? ''})`).join('\n')}`
+  }).join('\n\n')
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="font-serif text-lg font-bold" style={{ letterSpacing: '-0.02em' }}>Weekly Schedule</h3>
+        <CopyButton text={sectionText} label="Copy Section" />
+      </div>
+
+      {/* Desktop: grid view */}
+      <div className="hidden lg:block">
+        <ScrollArea className="w-full">
+          <div className="grid grid-cols-7 gap-2 min-w-[900px]">
+            {schedule.map((day, di) => {
+              const blocks = Array.isArray(day?.blocks) ? day.blocks : []
+              return (
+                <div key={di} className="space-y-2">
+                  <div className="text-xs font-bold uppercase tracking-wide text-center py-2 bg-muted border">{day?.day ?? ''}</div>
+                  {blocks.map((b, bi) => (
+                    <div key={bi} className={`border p-2 space-y-1 ${subjectColor(b?.subject ?? '')}`}>
+                      <div className="text-xs font-mono font-medium">{b?.time ?? ''}</div>
+                      <div className="text-xs font-semibold">{b?.subject ?? ''}</div>
+                      <div className="text-xs text-inherit/80 leading-snug">{b?.topic ?? ''}</div>
+                      <div className="flex items-center justify-between">
+                        <Badge variant="outline" className="text-[10px] px-1 py-0 h-4">{b?.type ?? ''}</Badge>
+                        {difficultyIndicator(b?.difficulty ?? '')}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            })}
+          </div>
+        </ScrollArea>
+      </div>
+
+      {/* Mobile: stacked view */}
+      <div className="lg:hidden space-y-4">
+        {schedule.map((day, di) => {
+          const blocks = Array.isArray(day?.blocks) ? day.blocks : []
+          return (
+            <Card key={di}>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm font-bold uppercase tracking-wide">{day?.day ?? ''}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {blocks.map((b, bi) => (
+                  <div key={bi} className={`border p-3 ${subjectColor(b?.subject ?? '')}`}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-xs font-mono font-medium">{b?.time ?? ''}</span>
+                      {difficultyIndicator(b?.difficulty ?? '')}
+                    </div>
+                    <div className="text-sm font-semibold">{b?.subject ?? ''}</div>
+                    <div className="text-xs mt-0.5">{b?.topic ?? ''}</div>
+                    <Badge variant="outline" className="text-[10px] px-1 py-0 h-4 mt-1">{b?.type ?? ''}</Badge>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// --- Tab: Monthly Roadmap ---
+function RoadmapTab({ data }: { data: AgentResult }) {
+  const roadmap = Array.isArray(data?.monthly_roadmap) ? data.monthly_roadmap : []
+
+  const sectionText = roadmap.map(m => {
+    const weeks = Array.isArray(m?.weeks) ? m.weeks : []
+    return `${m?.month ?? ''}:\n${weeks.map(w => {
+      const fa = Array.isArray(w?.focus_areas) ? w.focus_areas : []
+      const ms = Array.isArray(w?.milestones) ? w.milestones : []
+      return `  Week ${w?.week ?? 0}: Focus: ${fa.join(', ')} | Milestones: ${ms.join(', ')}`
+    }).join('\n')}`
+  }).join('\n\n')
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="font-serif text-lg font-bold" style={{ letterSpacing: '-0.02em' }}>Monthly Roadmap</h3>
+        <CopyButton text={sectionText} label="Copy Section" />
+      </div>
+
+      <div className="space-y-6">
+        {roadmap.map((m, mi) => {
+          const weeks = Array.isArray(m?.weeks) ? m.weeks : []
+          return (
+            <Card key={mi}>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base font-serif font-bold" style={{ letterSpacing: '-0.02em' }}>{m?.month ?? ''}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {weeks.map((w, wi) => {
+                  const focusAreas = Array.isArray(w?.focus_areas) ? w.focus_areas : []
+                  const milestones = Array.isArray(w?.milestones) ? w.milestones : []
+                  return (
+                    <div key={wi} className="border p-4 space-y-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold uppercase tracking-wide text-muted-foreground">Week {w?.week ?? wi + 1}</span>
+                        <div className="flex-1 h-px bg-border" />
+                      </div>
+                      <div>
+                        <span className="text-xs text-muted-foreground uppercase tracking-wide">Focus Areas</span>
+                        <div className="flex flex-wrap gap-1.5 mt-1.5">
+                          {focusAreas.map((fa, fi) => (
+                            <Badge key={fi} variant="secondary" className="text-xs">{fa}</Badge>
+                          ))}
+                        </div>
+                      </div>
+                      {milestones.length > 0 && (
+                        <div>
+                          <span className="text-xs text-muted-foreground uppercase tracking-wide">Milestones</span>
+                          <ul className="mt-1.5 space-y-1">
+                            {milestones.map((ms, msi) => (
+                              <li key={msi} className="flex items-start gap-2 text-sm">
+                                <FiCheck className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0 mt-0.5" />
+                                <span>{ms}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// --- Tab: Mock Strategy ---
+function MocksTab({ data }: { data: AgentResult }) {
+  const strategy = data?.mock_strategy
+  const entries: { title: string; icon: React.ReactNode; info: MockInfo | undefined }[] = [
+    { title: 'CAT Mocks', icon: <FiBookOpen className="h-4 w-4" />, info: strategy?.cat_mocks },
+    { title: 'GATE Mocks', icon: <FiCpu className="h-4 w-4" />, info: strategy?.gate_mocks },
+    { title: 'Placement Mocks', icon: <FiUsers className="h-4 w-4" />, info: strategy?.placement_mocks },
+  ]
+
+  const sectionText = entries.map(e => {
+    const areas = Array.isArray(e.info?.focus_areas) ? e.info.focus_areas : []
+    return `${e.title}:\n  Frequency: ${e.info?.frequency ?? 'N/A'}\n  Next Mock: ${e.info?.next_mock ?? 'N/A'}\n  Focus: ${areas.join(', ')}`
+  }).join('\n\n')
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="font-serif text-lg font-bold" style={{ letterSpacing: '-0.02em' }}>Mock Test Strategy</h3>
+        <CopyButton text={sectionText} label="Copy Section" />
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {entries.map((e, i) => {
+          const areas = Array.isArray(e.info?.focus_areas) ? e.info.focus_areas : []
+          return (
+            <Card key={i}>
+              <CardHeader className="pb-3">
+                <div className="flex items-center gap-2">
+                  {e.icon}
+                  <CardTitle className="text-sm font-bold">{e.title}</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Frequency</span>
+                  <p className="text-sm font-medium mt-0.5">{e.info?.frequency ?? 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Next Mock</span>
+                  <p className="text-sm font-mono font-medium mt-0.5">{e.info?.next_mock ?? 'N/A'}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground uppercase tracking-wide">Focus Areas</span>
+                  <div className="flex flex-wrap gap-1.5 mt-1.5">
+                    {areas.map((a, ai) => (
+                      <Badge key={ai} variant="secondary" className="text-xs">{a}</Badge>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+// --- Tab: Performance Metrics ---
+function MetricsTab({ data }: { data: AgentResult }) {
+  const metrics = data?.performance_metrics
+  const weeklyTargets = Array.isArray(metrics?.weekly_targets) ? metrics.weekly_targets : []
+  const scoreTargets = Array.isArray(metrics?.monthly_score_targets) ? metrics.monthly_score_targets : []
+  const burnoutRisk = metrics?.burnout_risk ?? ''
+  const burnoutRecs = Array.isArray(metrics?.burnout_recommendations) ? metrics.burnout_recommendations : []
+
+  const sectionText = [
+    'WEEKLY TARGETS:',
+    ...weeklyTargets.map(t => `  ${t?.subject ?? ''}: ${t?.hours ?? 0}h, ${t?.topics_count ?? 0} topics`),
+    '',
+    'MONTHLY SCORE TARGETS:',
+    ...scoreTargets.map(s => `  ${s?.exam ?? ''}: ${s?.current_score ?? ''} -> ${s?.target_score ?? ''}`),
+    '',
+    `BURNOUT RISK: ${burnoutRisk}`,
+    'RECOMMENDATIONS:',
+    ...burnoutRecs.map((r, i) => `  ${i + 1}. ${r}`),
+  ].join('\n')
+
+  return (
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h3 className="font-serif text-lg font-bold" style={{ letterSpacing: '-0.02em' }}>Performance Metrics</h3>
+        <CopyButton text={sectionText} label="Copy Section" />
+      </div>
+
+      {/* Weekly Targets */}
+      {weeklyTargets.length > 0 && (
+        <div>
+          <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Weekly Targets</h4>
+          <Card>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/40">
+                      <th className="text-left p-3 font-medium uppercase tracking-wide text-xs text-muted-foreground">Subject</th>
+                      <th className="text-right p-3 font-medium uppercase tracking-wide text-xs text-muted-foreground">Hours/Week</th>
+                      <th className="text-right p-3 font-medium uppercase tracking-wide text-xs text-muted-foreground">Topics</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {weeklyTargets.map((t, i) => (
+                      <tr key={i} className="border-b last:border-b-0">
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-2 h-2 ${subjectBadgeColor(t?.subject ?? '').includes('blue') ? 'bg-blue-500' : subjectBadgeColor(t?.subject ?? '').includes('purple') ? 'bg-purple-500' : subjectBadgeColor(t?.subject ?? '').includes('green') ? 'bg-green-500' : subjectBadgeColor(t?.subject ?? '').includes('amber') ? 'bg-amber-500' : subjectBadgeColor(t?.subject ?? '').includes('pink') ? 'bg-pink-500' : 'bg-gray-400'}`} />
+                            <span className="font-medium">{t?.subject ?? ''}</span>
+                          </div>
+                        </td>
+                        <td className="p-3 text-right font-mono">{t?.hours ?? 0}h</td>
+                        <td className="p-3 text-right font-mono">{t?.topics_count ?? 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Score Targets */}
+      {scoreTargets.length > 0 && (
+        <div>
+          <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Monthly Score Targets</h4>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {scoreTargets.map((s, i) => (
+              <Card key={i}>
+                <CardContent className="p-4 space-y-2">
+                  <span className="text-sm font-semibold">{s?.exam ?? ''}</span>
+                  <div className="flex items-center gap-3 text-sm">
+                    <div className="flex-1">
+                      <span className="text-xs text-muted-foreground uppercase tracking-wide">Current</span>
+                      <p className="font-mono font-medium">{s?.current_score ?? ''}</p>
+                    </div>
+                    <FiTrendingUp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <div className="flex-1 text-right">
+                      <span className="text-xs text-muted-foreground uppercase tracking-wide">Target</span>
+                      <p className="font-mono font-bold">{s?.target_score ?? ''}</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Burnout Risk */}
+      <div>
+        <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Burnout Assessment</h4>
+        <Card>
+          <CardContent className="p-4 space-y-4">
+            <div className="flex items-center gap-3">
+              <FiActivity className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm font-medium">Burnout Risk Level:</span>
+              <Badge className={burnoutColor(burnoutRisk)}>{burnoutRisk || 'Unknown'}</Badge>
+            </div>
+            {burnoutRecs.length > 0 && (
+              <div>
+                <span className="text-xs text-muted-foreground uppercase tracking-wide">Recommendations</span>
+                <ul className="mt-2 space-y-2">
+                  {burnoutRecs.map((r, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm leading-relaxed">
+                      <span className="flex-shrink-0 w-5 h-5 flex items-center justify-center bg-secondary text-secondary-foreground text-xs font-medium mt-0.5">{i + 1}</span>
+                      <span>{r}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+
+// --- Tab: Key Insights ---
+function InsightsTab({ data }: { data: AgentResult }) {
+  const insights = Array.isArray(data?.key_insights) ? data.key_insights : []
+
+  const sectionText = insights.map((ins, i) => `${i + 1}. ${ins}`).join('\n\n')
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="font-serif text-lg font-bold" style={{ letterSpacing: '-0.02em' }}>Key Insights</h3>
+        <CopyButton text={sectionText} label="Copy Section" />
+      </div>
+
+      {insights.length > 0 ? (
+        <div className="space-y-3">
+          {insights.map((ins, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <div className="flex items-start gap-4">
+                  <span className="flex-shrink-0 w-8 h-8 flex items-center justify-center bg-primary text-primary-foreground text-sm font-bold">{i + 1}</span>
+                  <p className="text-sm leading-relaxed flex-1">{ins}</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <p className="text-sm text-muted-foreground">No insights available.</p>
+      )}
+    </div>
+  )
+}
+
+// --- Tab: Full Plan ---
+function FullPlanTab({ data, fullText }: { data: AgentResult; fullText: string }) {
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="font-serif text-lg font-bold" style={{ letterSpacing: '-0.02em' }}>Full Study Plan</h3>
+        <CopyButton text={fullText} label="Copy Full Plan" />
+      </div>
+
+      <Card>
+        <CardContent className="p-6">
+          <div className="space-y-6 text-sm leading-relaxed">
+            {/* Timeline */}
+            <div>
+              <h4 className="font-serif font-bold text-base mb-2" style={{ letterSpacing: '-0.02em' }}>Timeline Analysis</h4>
+              {Array.isArray(data?.timeline_analysis?.upcoming_deadlines) && data.timeline_analysis.upcoming_deadlines.map((d, i) => (
+                <p key={i} className="ml-4">- {d?.exam ?? ''}: {d?.date ?? ''} ({d?.days_remaining ?? 0} days, {d?.urgency ?? ''})</p>
+              ))}
+            </div>
+            <Separator />
+
+            {/* Priority Order */}
+            {Array.isArray(data?.timeline_analysis?.priority_order) && data.timeline_analysis.priority_order.length > 0 && (
+              <>
+                <div>
+                  <h4 className="font-serif font-bold text-base mb-2" style={{ letterSpacing: '-0.02em' }}>Priority Order</h4>
+                  <ol className="ml-4 list-decimal list-inside space-y-1">
+                    {data.timeline_analysis.priority_order.map((p, i) => (
+                      <li key={i}>{p}</li>
+                    ))}
+                  </ol>
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* Priority Tasks */}
+            {Array.isArray(data?.priority_tasks) && data.priority_tasks.length > 0 && (
+              <>
+                <div>
+                  <h4 className="font-serif font-bold text-base mb-2" style={{ letterSpacing: '-0.02em' }}>Priority Tasks</h4>
+                  {data.priority_tasks.map((t, i) => (
+                    <p key={i} className="ml-4 mb-1">- [{t?.category ?? ''}] {t?.task ?? ''} (Due: {t?.deadline ?? ''}, {t?.estimated_hours ?? 0}h)</p>
+                  ))}
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* Weekly Schedule Summary */}
+            {Array.isArray(data?.weekly_schedule) && data.weekly_schedule.length > 0 && (
+              <>
+                <div>
+                  <h4 className="font-serif font-bold text-base mb-2" style={{ letterSpacing: '-0.02em' }}>Weekly Schedule</h4>
+                  {data.weekly_schedule.map((day, di) => {
+                    const blocks = Array.isArray(day?.blocks) ? day.blocks : []
+                    return (
+                      <div key={di} className="ml-4 mb-2">
+                        <p className="font-semibold">{day?.day ?? ''}</p>
+                        {blocks.map((b, bi) => (
+                          <p key={bi} className="ml-4 text-muted-foreground">{b?.time ?? ''} | {b?.subject ?? ''}: {b?.topic ?? ''}</p>
+                        ))}
+                      </div>
+                    )
+                  })}
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* Monthly Roadmap Summary */}
+            {Array.isArray(data?.monthly_roadmap) && data.monthly_roadmap.length > 0 && (
+              <>
+                <div>
+                  <h4 className="font-serif font-bold text-base mb-2" style={{ letterSpacing: '-0.02em' }}>Monthly Roadmap</h4>
+                  {data.monthly_roadmap.map((m, mi) => {
+                    const weeks = Array.isArray(m?.weeks) ? m.weeks : []
+                    return (
+                      <div key={mi} className="ml-4 mb-2">
+                        <p className="font-semibold">{m?.month ?? ''}</p>
+                        {weeks.map((w, wi) => {
+                          const fa = Array.isArray(w?.focus_areas) ? w.focus_areas : []
+                          return <p key={wi} className="ml-4 text-muted-foreground">Week {w?.week ?? wi + 1}: {fa.join(', ')}</p>
+                        })}
+                      </div>
+                    )
+                  })}
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* Mock Strategy */}
+            {data?.mock_strategy && (
+              <>
+                <div>
+                  <h4 className="font-serif font-bold text-base mb-2" style={{ letterSpacing: '-0.02em' }}>Mock Strategy</h4>
+                  {[
+                    { label: 'CAT', info: data.mock_strategy?.cat_mocks },
+                    { label: 'GATE', info: data.mock_strategy?.gate_mocks },
+                    { label: 'Placement', info: data.mock_strategy?.placement_mocks },
+                  ].map((e, i) => (
+                    <p key={i} className="ml-4">{e.label}: {e.info?.frequency ?? 'N/A'} (Next: {e.info?.next_mock ?? 'N/A'})</p>
+                  ))}
+                </div>
+                <Separator />
+              </>
+            )}
+
+            {/* Key Insights */}
+            {Array.isArray(data?.key_insights) && data.key_insights.length > 0 && (
+              <div>
+                <h4 className="font-serif font-bold text-base mb-2" style={{ letterSpacing: '-0.02em' }}>Key Insights</h4>
+                <ol className="ml-4 list-decimal list-inside space-y-1">
+                  {data.key_insights.map((ins, i) => (
+                    <li key={i}>{ins}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  )
+}
+
+// --- Agent Status Bar ---
 function AgentStatusBar({ isActive }: { isActive: boolean }) {
   return (
     <Card className="mt-8">
@@ -677,7 +1188,8 @@ function AgentStatusBar({ isActive }: { isActive: boolean }) {
           <div className="flex items-center gap-3">
             <div className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Agent</div>
             <Separator orientation="vertical" className="h-4" />
-            <div className="text-sm font-medium">Resume Optimization Agent</div>
+            <div className="text-sm font-medium">Dual Prep Master Planner</div>
+            <span className="text-xs text-muted-foreground font-mono hidden sm:inline">({AGENT_ID})</span>
           </div>
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${isActive ? 'bg-green-500 animate-pulse' : 'bg-muted-foreground/30'}`} />
@@ -691,24 +1203,55 @@ function AgentStatusBar({ isActive }: { isActive: boolean }) {
 
 // --- Main Page ---
 export default function Page() {
-  const [resumeText, setResumeText] = useState('')
-  const [jdText, setJdText] = useState('')
+  const [formData, setFormData] = useState<FormData>(INITIAL_FORM)
   const [loading, setLoading] = useState(false)
   const [results, setResults] = useState<AgentResult | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('keywords')
+  const [activeTab, setActiveTab] = useState('timeline')
   const [sampleMode, setSampleMode] = useState(false)
   const [activeAgentId, setActiveAgentId] = useState<string | null>(null)
 
-  const displayResults = sampleMode && !results ? SAMPLE_RESULTS : results
-  const displayResume = sampleMode && !resumeText ? SAMPLE_RESUME : resumeText
-  const displayJd = sampleMode && !jdText ? SAMPLE_JD : jdText
+  const displayForm = sampleMode && formData.branch === '' ? SAMPLE_FORM : formData
+  const displayResults = sampleMode && !results ? SAMPLE_DATA : results
 
-  const handleOptimize = useCallback(async () => {
-    const resume = resumeText || (sampleMode ? SAMPLE_RESUME : '')
-    const jd = jdText || (sampleMode ? SAMPLE_JD : '')
+  const updateField = useCallback((field: keyof FormData, value: string | boolean) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }, [])
 
-    if (!resume.trim() || !jd.trim()) return
+  const buildMessage = useCallback((form: FormData): string => {
+    const lines: string[] = [
+      'Student Profile:',
+      `- Branch: ${form.branch}`,
+      `- Semester: ${form.semester}`,
+      `- Available Study Hours/Day: ${form.studyHours}`,
+      `- Burnout Level: ${form.burnoutLevel}`,
+      '',
+      'Exam Targets:',
+    ]
+    if (form.placements) lines.push(`- Placements: Yes (Season starts: ${form.placementDate})`)
+    if (form.cat) lines.push(`- CAT: Yes (Exam date: ${form.catDate})`)
+    if (form.gate) lines.push(`- GATE: Yes (Exam date: ${form.gateDate})`)
+    lines.push(`- Semester Exams: ${form.semesterDate}`)
+    lines.push('')
+    lines.push('Current Preparation:')
+    lines.push(`- DSA Level: ${form.dsaLevel}`)
+    if (form.cat) lines.push(`- CAT Mock Score: ${form.catScore} percentile`)
+    if (form.gate) lines.push(`- GATE Mock Score: ${form.gateScore}/100`)
+    lines.push(`- Strongest Subject: ${form.strongSubject}`)
+    lines.push(`- Weakest Subject: ${form.weakSubject}`)
+    lines.push(`- Lab Days: ${form.labDays}`)
+    if (form.additionalContext) {
+      lines.push('')
+      lines.push(`Additional Context: ${form.additionalContext}`)
+    }
+    lines.push('')
+    lines.push('Please create a comprehensive dual-preparation study plan optimized for my profile. Include timeline analysis, weekly schedule, monthly roadmap, priority tasks, mock test strategy, performance metrics, and key strategic insights.')
+    return lines.join('\n')
+  }, [])
+
+  const handleGenerate = useCallback(async () => {
+    const form = formData.branch ? formData : (sampleMode ? SAMPLE_FORM : formData)
+    if (!form.branch || !form.semester || !form.studyHours || !form.semesterDate) return
 
     setLoading(true)
     setError(null)
@@ -716,7 +1259,7 @@ export default function Page() {
     setActiveAgentId(AGENT_ID)
 
     try {
-      const message = `Resume:\n${resume}\n\nJob Description:\n${jd}`
+      const message = buildMessage(form)
       const result: AIAgentResponse = await callAIAgent(message, AGENT_ID)
 
       if (result.success) {
@@ -726,17 +1269,16 @@ export default function Page() {
         if (typeof rawResult === 'string') {
           parsed = parseLLMJson(rawResult)
         } else if (rawResult && typeof rawResult === 'object') {
-          // Check if the data is nested under common keys
-          if (rawResult?.keyword_alignment || rawResult?.bullet_improvements) {
+          if (rawResult?.timeline_analysis || rawResult?.weekly_schedule) {
             parsed = rawResult
           } else {
             parsed = parseLLMJson(rawResult)
           }
         }
 
-        if (parsed && typeof parsed === 'object' && !parsed?.error) {
+        if (parsed && typeof parsed === 'object' && !(parsed as Record<string, unknown>)?.error) {
           setResults(parsed as AgentResult)
-          setActiveTab('keywords')
+          setActiveTab('timeline')
         } else {
           setError('Could not parse the agent response. Please try again.')
         }
@@ -749,68 +1291,95 @@ export default function Page() {
       setLoading(false)
       setActiveAgentId(null)
     }
-  }, [resumeText, jdText, sampleMode])
+  }, [formData, sampleMode, buildMessage])
 
   const handleClear = useCallback(() => {
-    setResumeText('')
-    setJdText('')
+    setFormData(INITIAL_FORM)
     setResults(null)
     setError(null)
-    setActiveTab('keywords')
+    setActiveTab('timeline')
   }, [])
 
-  const canOptimize = (resumeText.trim().length > 0 || (sampleMode && SAMPLE_RESUME.length > 0)) && (jdText.trim().length > 0 || (sampleMode && SAMPLE_JD.length > 0))
+  const canGenerate = (() => {
+    const form = formData.branch ? formData : (sampleMode ? SAMPLE_FORM : formData)
+    return !!(form.branch && form.semester && form.studyHours && form.semesterDate)
+  })()
 
-  const generateFullReport = useCallback(() => {
+  const generateFullPlanText = useCallback((): string => {
     const data = displayResults
     if (!data) return ''
-    const sections: string[] = []
+    const sections: string[] = ['=== DUALPREP MASTER STUDY PLAN ===', '']
 
-    sections.push('=== RESUME OPTIMIZATION REPORT ===\n')
-
-    const matched = Array.isArray(data?.keyword_alignment?.matched_keywords) ? data.keyword_alignment.matched_keywords : []
-    const missing = Array.isArray(data?.keyword_alignment?.missing_keywords) ? data.keyword_alignment.missing_keywords : []
-    const suggestions = Array.isArray(data?.keyword_alignment?.suggestions) ? data.keyword_alignment.suggestions : []
-
-    sections.push('--- KEYWORD ALIGNMENT ---')
-    sections.push(`Matched: ${matched.join(', ')}`)
-    sections.push(`Missing: ${missing.join(', ')}`)
-    sections.push('Suggestions:')
-    suggestions.forEach((s, i) => sections.push(`  ${i + 1}. ${s}`))
+    // Timeline
+    const deadlines = Array.isArray(data?.timeline_analysis?.upcoming_deadlines) ? data.timeline_analysis.upcoming_deadlines : []
+    sections.push('--- TIMELINE ANALYSIS ---')
+    deadlines.forEach(d => sections.push(`  ${d?.exam ?? ''}: ${d?.date ?? ''} (${d?.days_remaining ?? 0} days, ${d?.urgency ?? ''})`))
+    const pOrder = Array.isArray(data?.timeline_analysis?.priority_order) ? data.timeline_analysis.priority_order : []
+    sections.push('Priority Order:')
+    pOrder.forEach((p, i) => sections.push(`  ${i + 1}. ${p}`))
     sections.push('')
 
-    const bullets = Array.isArray(data?.bullet_improvements) ? data.bullet_improvements : []
-    sections.push('--- BULLET IMPROVEMENTS ---')
-    bullets.forEach((b, i) => {
-      sections.push(`  ${i + 1}. Original: ${b?.original ?? ''}`)
-      sections.push(`     Improved: ${b?.improved ?? ''}`)
+    // Tasks
+    const tasks = Array.isArray(data?.priority_tasks) ? data.priority_tasks : []
+    sections.push('--- PRIORITY TASKS ---')
+    tasks.forEach(t => sections.push(`  [${t?.category ?? ''}] ${t?.task ?? ''} | Due: ${t?.deadline ?? ''} | ${t?.estimated_hours ?? 0}h | ${t?.reasoning ?? ''}`))
+    sections.push('')
+
+    // Weekly
+    const schedule = Array.isArray(data?.weekly_schedule) ? data.weekly_schedule : []
+    sections.push('--- WEEKLY SCHEDULE ---')
+    schedule.forEach(day => {
+      const blocks = Array.isArray(day?.blocks) ? day.blocks : []
+      sections.push(`  ${day?.day ?? ''}:`)
+      blocks.forEach(b => sections.push(`    ${b?.time ?? ''} | ${b?.subject ?? ''} | ${b?.topic ?? ''} (${b?.type ?? ''}, ${b?.difficulty ?? ''})`))
     })
     sections.push('')
 
-    const impacts = Array.isArray(data?.impact_quantification) ? data.impact_quantification : []
-    sections.push('--- IMPACT QUANTIFICATION ---')
-    impacts.forEach((item, i) => {
-      sections.push(`  ${i + 1}. ${item?.achievement ?? ''}`)
-      sections.push(`     ${item?.suggestion ?? ''}`)
+    // Roadmap
+    const roadmap = Array.isArray(data?.monthly_roadmap) ? data.monthly_roadmap : []
+    sections.push('--- MONTHLY ROADMAP ---')
+    roadmap.forEach(m => {
+      const weeks = Array.isArray(m?.weeks) ? m.weeks : []
+      sections.push(`  ${m?.month ?? ''}:`)
+      weeks.forEach(w => {
+        const fa = Array.isArray(w?.focus_areas) ? w.focus_areas : []
+        const ms = Array.isArray(w?.milestones) ? w.milestones : []
+        sections.push(`    Week ${w?.week ?? 0}: ${fa.join(', ')}`)
+        ms.forEach(mi => sections.push(`      - ${mi}`))
+      })
     })
     sections.push('')
 
-    const verbs = Array.isArray(data?.action_verbs) ? data.action_verbs : []
-    sections.push('--- ACTION VERBS ---')
-    verbs.forEach((v) => {
-      sections.push(`  ${v?.weak_verb ?? ''} -> ${v?.stronger_verb ?? ''} (${v?.context ?? ''})`)
-    })
+    // Mocks
+    sections.push('--- MOCK STRATEGY ---')
+    const ms = data?.mock_strategy
+    if (ms) {
+      ;[
+        { label: 'CAT', info: ms?.cat_mocks },
+        { label: 'GATE', info: ms?.gate_mocks },
+        { label: 'Placement', info: ms?.placement_mocks },
+      ].forEach(e => {
+        const areas = Array.isArray(e.info?.focus_areas) ? e.info.focus_areas : []
+        sections.push(`  ${e.label}: ${e.info?.frequency ?? 'N/A'} | Next: ${e.info?.next_mock ?? 'N/A'} | Focus: ${areas.join(', ')}`)
+      })
+    }
     sections.push('')
 
-    const projects = Array.isArray(data?.iot_projects) ? data.iot_projects : []
-    sections.push('--- IOT PROJECTS ---')
-    projects.forEach((p, i) => {
-      sections.push(`  ${i + 1}. ${p?.title ?? ''}`)
-      sections.push(`     ${p?.description ?? ''}`)
-      sections.push(`     Time: ${p?.estimated_time ?? ''}`)
-      sections.push(`     Skills: ${Array.isArray(p?.skills) ? p.skills.join(', ') : ''}`)
-      sections.push(`     Relevance: ${p?.relevance ?? ''}`)
-    })
+    // Metrics
+    sections.push('--- PERFORMANCE METRICS ---')
+    const wt = Array.isArray(data?.performance_metrics?.weekly_targets) ? data.performance_metrics.weekly_targets : []
+    wt.forEach(t => sections.push(`  ${t?.subject ?? ''}: ${t?.hours ?? 0}h/week, ${t?.topics_count ?? 0} topics`))
+    const st = Array.isArray(data?.performance_metrics?.monthly_score_targets) ? data.performance_metrics.monthly_score_targets : []
+    st.forEach(s => sections.push(`  ${s?.exam ?? ''}: ${s?.current_score ?? ''} -> ${s?.target_score ?? ''}`))
+    sections.push(`  Burnout Risk: ${data?.performance_metrics?.burnout_risk ?? ''}`)
+    const br = Array.isArray(data?.performance_metrics?.burnout_recommendations) ? data.performance_metrics.burnout_recommendations : []
+    br.forEach((r, i) => sections.push(`  ${i + 1}. ${r}`))
+    sections.push('')
+
+    // Insights
+    const insights = Array.isArray(data?.key_insights) ? data.key_insights : []
+    sections.push('--- KEY INSIGHTS ---')
+    insights.forEach((ins, i) => sections.push(`  ${i + 1}. ${ins}`))
 
     return sections.join('\n')
   }, [displayResults])
@@ -820,13 +1389,13 @@ export default function Page() {
       <div className="min-h-screen bg-background text-foreground">
         {/* Header */}
         <header className="sticky top-0 z-50 bg-background border-b">
-          <div className="max-w-7xl mx-auto px-6 py-5 flex items-center justify-between">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
             <div>
-              <h1 className="font-serif text-2xl font-bold tracking-tight" style={{ letterSpacing: '-0.02em' }}>ResumeEdge</h1>
-              <p className="text-sm text-muted-foreground mt-0.5 font-sans">Optimize your resume for campus placements</p>
+              <h1 className="font-serif text-2xl font-bold tracking-tight" style={{ letterSpacing: '-0.02em' }}>DualPrep</h1>
+              <p className="text-xs text-muted-foreground mt-0.5 font-sans">Master Planner for Placements, CAT, GATE & Semester Exams</p>
             </div>
             <div className="flex items-center gap-3">
-              <Label htmlFor="sample-toggle" className="text-xs text-muted-foreground cursor-pointer">Sample Data</Label>
+              <Label htmlFor="sample-toggle" className="text-xs text-muted-foreground cursor-pointer hidden sm:inline">Sample Data</Label>
               <Switch
                 id="sample-toggle"
                 checked={sampleMode}
@@ -836,77 +1405,264 @@ export default function Page() {
           </div>
         </header>
 
-        <main className="max-w-7xl mx-auto px-6 py-8 space-y-8" style={{ lineHeight: '1.7' }}>
-          {/* Input Section */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8" style={{ lineHeight: '1.7' }}>
+
+          {/* Input Form */}
           <section>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Resume Input */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Resume</CardTitle>
-                    <Badge variant="outline" className="text-xs font-mono">{(displayResume).length} chars</Badge>
+            <Card>
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <FiBookOpen className="h-5 w-5 text-muted-foreground" />
+                  <CardTitle className="font-serif text-lg" style={{ letterSpacing: '-0.02em' }}>Student Profile</CardTitle>
+                </div>
+                <CardDescription>Enter your details to generate a personalized dual-preparation study plan.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+
+                {/* Section 1: Basic Info */}
+                <div>
+                  <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Basic Information</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">BTech Branch *</Label>
+                      <Select value={displayForm.branch} onValueChange={(v) => updateField('branch', v)}>
+                        <SelectTrigger><SelectValue placeholder="Select branch" /></SelectTrigger>
+                        <SelectContent>
+                          {['CSE', 'ECE', 'EE', 'ME', 'CE', 'IT', 'Other'].map(b => (
+                            <SelectItem key={b} value={b}>{b}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Current Semester *</Label>
+                      <Select value={displayForm.semester} onValueChange={(v) => updateField('semester', v)}>
+                        <SelectTrigger><SelectValue placeholder="Select semester" /></SelectTrigger>
+                        <SelectContent>
+                          {['3rd', '4th', '5th', '6th', '7th', '8th'].map(s => (
+                            <SelectItem key={s} value={s}>{s}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Study Hours/Day *</Label>
+                      <Input
+                        type="number"
+                        min={1}
+                        max={16}
+                        placeholder="e.g. 8"
+                        value={displayForm.studyHours}
+                        onChange={(e) => updateField('studyHours', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Burnout Level</Label>
+                      <Select value={displayForm.burnoutLevel} onValueChange={(v) => updateField('burnoutLevel', v)}>
+                        <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
+                        <SelectContent>
+                          {['Low', 'Moderate', 'High', 'Critical'].map(l => (
+                            <SelectItem key={l} value={l}>{l}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <Textarea
-                    placeholder="Paste your resume content here..."
-                    className="min-h-[300px] resize-y text-sm leading-relaxed font-sans"
-                    value={sampleMode && !resumeText ? SAMPLE_RESUME : resumeText}
-                    onChange={(e) => setResumeText(e.target.value)}
-                  />
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* JD Input */}
-              <Card>
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-medium uppercase tracking-wide text-muted-foreground">Job Description</CardTitle>
-                    <Badge variant="outline" className="text-xs font-mono">{(displayJd).length} chars</Badge>
+                <Separator />
+
+                {/* Section 2: Exam Targets */}
+                <div>
+                  <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Exam Targets</h4>
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-6">
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="placements"
+                          checked={displayForm.placements}
+                          onCheckedChange={(v) => updateField('placements', !!v)}
+                        />
+                        <Label htmlFor="placements" className="text-sm cursor-pointer">Placements</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="cat"
+                          checked={displayForm.cat}
+                          onCheckedChange={(v) => updateField('cat', !!v)}
+                        />
+                        <Label htmlFor="cat" className="text-sm cursor-pointer">CAT</Label>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Checkbox
+                          id="gate"
+                          checked={displayForm.gate}
+                          onCheckedChange={(v) => updateField('gate', !!v)}
+                        />
+                        <Label htmlFor="gate" className="text-sm cursor-pointer">GATE</Label>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">Semester Exam Date *</Label>
+                        <Input
+                          type="date"
+                          value={displayForm.semesterDate}
+                          onChange={(e) => updateField('semesterDate', e.target.value)}
+                        />
+                      </div>
+                      {displayForm.cat && (
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">CAT Exam Date</Label>
+                          <Input
+                            type="date"
+                            value={displayForm.catDate}
+                            onChange={(e) => updateField('catDate', e.target.value)}
+                          />
+                        </div>
+                      )}
+                      {displayForm.gate && (
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">GATE Exam Date</Label>
+                          <Input
+                            type="date"
+                            value={displayForm.gateDate}
+                            onChange={(e) => updateField('gateDate', e.target.value)}
+                          />
+                        </div>
+                      )}
+                      {displayForm.placements && (
+                        <div className="space-y-1.5">
+                          <Label className="text-xs">Placement Season Start</Label>
+                          <Input
+                            type="date"
+                            value={displayForm.placementDate}
+                            onChange={(e) => updateField('placementDate', e.target.value)}
+                          />
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </CardHeader>
-                <CardContent>
+                </div>
+
+                <Separator />
+
+                {/* Section 3: Current Prep Status */}
+                <div>
+                  <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Current Preparation Status</h4>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">DSA Level</Label>
+                      <Select value={displayForm.dsaLevel} onValueChange={(v) => updateField('dsaLevel', v)}>
+                        <SelectTrigger><SelectValue placeholder="Select level" /></SelectTrigger>
+                        <SelectContent>
+                          {['Beginner', 'Intermediate', 'Advanced'].map(l => (
+                            <SelectItem key={l} value={l}>{l}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {displayForm.cat && (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">CAT Mock Score</Label>
+                        <Input
+                          type="number"
+                          placeholder="Enter percentile e.g. 85"
+                          value={displayForm.catScore}
+                          onChange={(e) => updateField('catScore', e.target.value)}
+                        />
+                      </div>
+                    )}
+                    {displayForm.gate && (
+                      <div className="space-y-1.5">
+                        <Label className="text-xs">GATE Mock Score</Label>
+                        <Input
+                          type="number"
+                          placeholder="Enter marks out of 100"
+                          value={displayForm.gateScore}
+                          onChange={(e) => updateField('gateScore', e.target.value)}
+                        />
+                      </div>
+                    )}
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Strongest Subject</Label>
+                      <Input
+                        type="text"
+                        placeholder="e.g. Data Structures"
+                        value={displayForm.strongSubject}
+                        onChange={(e) => updateField('strongSubject', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">Weakest Subject</Label>
+                      <Input
+                        type="text"
+                        placeholder="e.g. Aptitude"
+                        value={displayForm.weakSubject}
+                        onChange={(e) => updateField('weakSubject', e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-1.5">
+                      <Label className="text-xs">College Lab Days</Label>
+                      <Input
+                        type="text"
+                        placeholder="e.g. Mon, Wed, Fri"
+                        value={displayForm.labDays}
+                        onChange={(e) => updateField('labDays', e.target.value)}
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <Separator />
+
+                {/* Section 4: Additional Context */}
+                <div>
+                  <h4 className="text-xs font-medium uppercase tracking-wide text-muted-foreground mb-3">Additional Context</h4>
                   <Textarea
-                    placeholder="Paste the target job description here..."
-                    className="min-h-[300px] resize-y text-sm leading-relaxed font-sans"
-                    value={sampleMode && !jdText ? SAMPLE_JD : jdText}
-                    onChange={(e) => setJdText(e.target.value)}
+                    placeholder="Any specific concerns, upcoming events, or constraints? (optional)"
+                    className="min-h-[80px] text-sm"
+                    value={displayForm.additionalContext}
+                    onChange={(e) => updateField('additionalContext', e.target.value)}
                   />
-                </CardContent>
-              </Card>
-            </div>
+                </div>
 
-            {/* CTA Buttons */}
-            <div className="flex items-center justify-center gap-4 mt-6">
-              <Button
-                onClick={handleOptimize}
-                disabled={loading || !canOptimize}
-                className="px-8 py-3 text-sm font-medium tracking-wide"
-                size="lg"
-              >
-                {loading ? (
-                  <>
-                    <FiLoader className="mr-2 h-4 w-4 animate-spin" />
-                    Optimizing...
-                  </>
-                ) : (
-                  'Optimize My Resume'
-                )}
-              </Button>
+                {/* CTA */}
+                <div className="flex items-center justify-center gap-4 pt-2">
+                  <Button
+                    onClick={handleGenerate}
+                    disabled={loading || !canGenerate}
+                    className="px-8 py-3 text-sm font-medium tracking-wide"
+                    size="lg"
+                  >
+                    {loading ? (
+                      <>
+                        <FiLoader className="mr-2 h-4 w-4 animate-spin" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <FiSend className="mr-2 h-4 w-4" />
+                        Generate My Plan
+                      </>
+                    )}
+                  </Button>
 
-              {(resumeText || jdText || results) && (
-                <Button
-                  onClick={handleClear}
-                  variant="outline"
-                  size="lg"
-                  className="px-6 py-3 text-sm"
-                >
-                  <FiTrash2 className="mr-2 h-4 w-4" />
-                  Clear
-                </Button>
-              )}
-            </div>
+                  {(formData.branch || results) && (
+                    <Button
+                      onClick={handleClear}
+                      variant="outline"
+                      size="lg"
+                      className="px-6 py-3 text-sm"
+                    >
+                      <FiTrash2 className="mr-2 h-4 w-4" />
+                      Clear
+                    </Button>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
           </section>
 
           {/* Error State */}
@@ -916,11 +1672,11 @@ export default function Page() {
                 <div className="flex items-start gap-3">
                   <FiAlertCircle className="h-5 w-5 text-destructive flex-shrink-0 mt-0.5" />
                   <div className="flex-1">
-                    <p className="text-sm font-medium text-destructive">Optimization Failed</p>
+                    <p className="text-sm font-medium text-destructive">Plan Generation Failed</p>
                     <p className="text-sm text-muted-foreground mt-1">{error}</p>
                   </div>
                   <Button
-                    onClick={handleOptimize}
+                    onClick={handleGenerate}
                     variant="outline"
                     size="sm"
                     className="flex-shrink-0"
@@ -943,46 +1699,56 @@ export default function Page() {
               <Separator />
 
               <div className="flex items-center justify-between">
-                <h2 className="font-serif text-xl font-bold tracking-tight" style={{ letterSpacing: '-0.02em' }}>Optimization Results</h2>
-                <CopyButton text={generateFullReport()} label="Copy Full Report" />
+                <h2 className="font-serif text-xl font-bold tracking-tight" style={{ letterSpacing: '-0.02em' }}>Your Study Plan</h2>
+                <CopyButton text={generateFullPlanText()} label="Copy Full Plan" />
               </div>
 
               <Tabs value={activeTab} onValueChange={setActiveTab}>
-                <TabsList className="w-full justify-start bg-transparent border-b rounded-none h-auto p-0 gap-0">
-                  {TAB_CONFIG.map((tab) => {
-                    const IconComp = tab.icon
-                    return (
-                      <TabsTrigger
-                        key={tab.id}
-                        value={tab.id}
-                        className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-4 py-3 text-sm gap-2"
-                      >
-                        <IconComp className="h-4 w-4" />
-                        <span className="hidden sm:inline">{tab.label}</span>
-                      </TabsTrigger>
-                    )
-                  })}
-                </TabsList>
+                <ScrollArea className="w-full">
+                  <TabsList className="w-full justify-start bg-transparent border-b rounded-none h-auto p-0 gap-0 inline-flex min-w-max">
+                    {TAB_CONFIG.map((tab) => {
+                      const IconComp = tab.icon
+                      return (
+                        <TabsTrigger
+                          key={tab.id}
+                          value={tab.id}
+                          className="rounded-none border-b-2 border-transparent data-[state=active]:border-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none px-3 sm:px-4 py-3 text-xs sm:text-sm gap-1.5 whitespace-nowrap"
+                        >
+                          <IconComp className="h-3.5 w-3.5" />
+                          <span className="hidden sm:inline">{tab.label}</span>
+                        </TabsTrigger>
+                      )
+                    })}
+                  </TabsList>
+                </ScrollArea>
 
                 <div className="mt-6">
-                  <TabsContent value="keywords">
-                    <KeywordsTab data={displayResults?.keyword_alignment} />
+                  <TabsContent value="timeline">
+                    <TimelineTab data={displayResults} />
                   </TabsContent>
 
-                  <TabsContent value="bullets">
-                    <BulletsTab data={displayResults?.bullet_improvements} />
+                  <TabsContent value="weekly">
+                    <WeeklyTab data={displayResults} />
                   </TabsContent>
 
-                  <TabsContent value="impact">
-                    <ImpactTab data={displayResults?.impact_quantification} />
+                  <TabsContent value="roadmap">
+                    <RoadmapTab data={displayResults} />
                   </TabsContent>
 
-                  <TabsContent value="verbs">
-                    <VerbsTab data={displayResults?.action_verbs} />
+                  <TabsContent value="mocks">
+                    <MocksTab data={displayResults} />
                   </TabsContent>
 
-                  <TabsContent value="projects">
-                    <ProjectsTab data={displayResults?.iot_projects} />
+                  <TabsContent value="metrics">
+                    <MetricsTab data={displayResults} />
+                  </TabsContent>
+
+                  <TabsContent value="insights">
+                    <InsightsTab data={displayResults} />
+                  </TabsContent>
+
+                  <TabsContent value="fullplan">
+                    <FullPlanTab data={displayResults} fullText={generateFullPlanText()} />
                   </TabsContent>
                 </div>
               </Tabs>
@@ -992,9 +1758,9 @@ export default function Page() {
               <Card className="border-dashed">
                 <CardContent className="py-16">
                   <div className="text-center">
-                    <FiEdit3 className="h-10 w-10 text-muted-foreground/40 mx-auto mb-4" />
-                    <p className="text-base font-medium text-muted-foreground">Paste your resume and a job description to get started</p>
-                    <p className="text-sm text-muted-foreground/70 mt-2">Our AI agent will analyze keyword alignment, improve bullet points, and suggest impactful changes</p>
+                    <FiCalendar className="h-10 w-10 text-muted-foreground/40 mx-auto mb-4" />
+                    <p className="text-base font-medium text-muted-foreground">Fill in your student profile to get started</p>
+                    <p className="text-sm text-muted-foreground/70 mt-2 max-w-md mx-auto">Our AI strategist will create a personalized study plan covering timeline analysis, weekly schedules, monthly roadmaps, mock strategies, and performance metrics.</p>
                   </div>
                 </CardContent>
               </Card>

@@ -1,11 +1,11 @@
 {
   "agents": {
-    "resume_optimization_agent": {
-      "agent_id": "699964710fc64800c899bc30",
-      "name": "Resume Optimization Agent",
+    "dual_prep_planner": {
+      "agent_id": "699969eecf2aa167c05474fc",
+      "name": "Dual Prep Master Planner",
       "model": "gpt-4.1",
       "provider": "openai",
-      "temperature": 0.4,
+      "temperature": 0.5,
       "top_p": 0.95,
       "agent_type": "json",
       "has_knowledge_base": false,

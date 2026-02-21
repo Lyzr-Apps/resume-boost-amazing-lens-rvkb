@@ -1,0 +1,28 @@
+{
+  "agent_name": "Dual Prep Master Planner",
+  "agent_id": "699969eecf2aa167c05474fc",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "timeline_analysis": {
+      "upcoming_deadlines": [{ "exam": "string", "date": "string", "days_remaining": 0, "urgency": "string" }],
+      "priority_order": ["string"]
+    },
+    "weekly_schedule": [{ "day": "string", "blocks": [{ "time": "string", "subject": "string", "topic": "string", "type": "string", "difficulty": "string" }] }],
+    "monthly_roadmap": [{ "month": "string", "weeks": [{ "week": 0, "focus_areas": ["string"], "milestones": ["string"] }] }],
+    "priority_tasks": [{ "task": "string", "category": "string", "deadline": "string", "reasoning": "string", "estimated_hours": 0 }],
+    "mock_strategy": {
+      "cat_mocks": { "frequency": "string", "next_mock": "string", "focus_areas": ["string"] },
+      "gate_mocks": { "frequency": "string", "next_mock": "string", "focus_areas": ["string"] },
+      "placement_mocks": { "frequency": "string", "next_mock": "string", "focus_areas": ["string"] }
+    },
+    "performance_metrics": {
+      "weekly_targets": [{ "subject": "string", "hours": 0, "topics_count": 0 }],
+      "monthly_score_targets": [{ "exam": "string", "current_score": "string", "target_score": "string" }],
+      "burnout_risk": "string",
+      "burnout_recommendations": ["string"]
+    },
+    "key_insights": ["string"]
+  }
+}

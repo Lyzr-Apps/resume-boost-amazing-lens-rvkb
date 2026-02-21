@@ -123,15 +123,18 @@ export async function callAIAgent(
 
     const { task_id, user_id, session_id } = submitData
 
-    // 2. Poll POST /api/agent with { task_id } — adaptive backoff from CSR
-    //    Start with 2s delay to let the agent process, then back off gradually.
-    //    Max interval capped at 5s to avoid rate-limit (429) errors.
+    // 2. Poll POST /api/agent with { task_id } — conservative backoff from CSR
+    //    Wait 6s before first poll (agent needs time to process complex requests).
+    //    Use slow exponential backoff with jitter, capped at 10s between polls.
+    //    On 429, wait 15s minimum before retrying.
     const startTime = Date.now()
     let attempt = 0
+    let consecutive429s = 0
+
+    // Initial delay — give the agent time to start processing
+    await new Promise(r => setTimeout(r, 6000))
 
     while (Date.now() - startTime < POLL_TIMEOUT_MS) {
-      const delay = Math.min(2000 * Math.pow(1.3, attempt), 5000)
-      await new Promise(r => setTimeout(r, delay))
       attempt++
 
       let pollRes: Response | undefined
@@ -142,25 +145,42 @@ export async function callAIAgent(
           body: JSON.stringify({ task_id }),
         })
       } catch {
-        // Network error — wait and retry
-        await new Promise(r => setTimeout(r, 3000))
+        // Network error — wait 8s and retry
+        await new Promise(r => setTimeout(r, 8000))
         continue
       }
       if (!pollRes) {
+        await new Promise(r => setTimeout(r, 5000))
         continue // fetchWrapper returned undefined (redirect/error) — retry next poll
       }
 
-      // Handle 429 rate limit: wait longer before retrying
+      // Handle 429 rate limit: wait significantly longer before retrying
       if (pollRes.status === 429) {
+        consecutive429s++
         const retryAfter = pollRes.headers.get('Retry-After')
-        const waitMs = retryAfter ? parseInt(retryAfter, 10) * 1000 : 5000
-        await new Promise(r => setTimeout(r, Math.max(waitMs, 3000)))
+        const baseWait = retryAfter ? parseInt(retryAfter, 10) * 1000 : 15000
+        // Escalate wait time with each consecutive 429
+        const waitMs = Math.min(baseWait * consecutive429s, 30000)
+        await new Promise(r => setTimeout(r, waitMs))
         continue
       }
 
-      const pollData = await pollRes.json()
+      consecutive429s = 0 // Reset on successful response
+
+      let pollData: any
+      try {
+        pollData = await pollRes.json()
+      } catch {
+        // JSON parse error — wait and retry
+        await new Promise(r => setTimeout(r, 5000))
+        continue
+      }
 
       if (pollData.status === 'processing') {
+        // Adaptive backoff: start at 4s, grow to 10s max, with small random jitter
+        const jitter = Math.random() * 1000
+        const delay = Math.min(4000 * Math.pow(1.2, attempt - 1), 10000) + jitter
+        await new Promise(r => setTimeout(r, delay))
         continue
       }
 

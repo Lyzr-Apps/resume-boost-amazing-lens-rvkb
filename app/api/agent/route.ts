@@ -115,6 +115,13 @@ function normalizeResponse(parsed: any): NormalizedAgentResponse {
 }
 
 /**
+ * GET /api/agent — health check (keeps proxy/CDN happy)
+ */
+export async function GET() {
+  return NextResponse.json({ status: 'ok', timestamp: new Date().toISOString() })
+}
+
+/**
  * POST /api/agent
  *
  * Two modes, both POST:
@@ -196,20 +203,14 @@ async function submitTask(body: any) {
     body: JSON.stringify(payload),
   })
 
-  // Handle upstream rate limiting on submit
+  // Handle upstream rate limiting on submit — return 200 with error info
+  // so fetchWrapper doesn't intercept with dialogs
   if (submitRes.status === 429) {
-    const retryAfter = submitRes.headers.get('Retry-After') || '5'
-    return NextResponse.json(
-      {
-        success: false,
-        response: { status: 'error', result: {}, message: 'Rate limited. Please wait a moment and try again.' },
-        error: 'Rate limited. Please wait a moment and try again.',
-      },
-      {
-        status: 429,
-        headers: { 'Retry-After': retryAfter },
-      }
-    )
+    return NextResponse.json({
+      success: false,
+      response: { status: 'error', result: {}, message: 'The AI agent is currently busy. Please wait a moment and try again.' },
+      error: 'The AI agent is currently busy. Please wait a moment and try again.',
+    })
   }
 
   if (!submitRes.ok) {
@@ -256,16 +257,10 @@ async function pollTask(task_id: string) {
     },
   })
 
-  // Handle upstream rate limiting — pass 429 through so client can back off
+  // Handle upstream rate limiting — absorb it and tell client to keep waiting
+  // Return 200 with status: 'processing' so client polls normally at its own pace
   if (pollRes.status === 429) {
-    const retryAfter = pollRes.headers.get('Retry-After') || '5'
-    return NextResponse.json(
-      { status: 'processing' },
-      {
-        status: 429,
-        headers: { 'Retry-After': retryAfter },
-      }
-    )
+    return NextResponse.json({ status: 'processing' })
   }
 
   if (!pollRes.ok) {

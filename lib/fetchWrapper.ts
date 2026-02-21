@@ -1,15 +1,23 @@
-const fetchWrapper = async (...args) => {
+const fetchWrapper = async (...args: Parameters<typeof fetch>): Promise<Response | undefined> => {
   try {
     const response = await fetch(...args);
 
     // if backend sent a redirect
     if (response.redirected) {
-      window.location.href = response.url; // update ui to go to the redirected UI (often /login)
+      window.location.href = response.url;
       return;
     }
 
-    // Handle 429 rate limit — return the response so callers can handle retry
+    // Always return 429 so callers can handle rate-limit retry
     if (response.status === 429) {
+      return response;
+    }
+
+    // For /api/agent calls, always return the response (even 4xx/5xx)
+    // so the polling logic in aiAgent.ts can handle retries gracefully
+    // without triggering confirm() dialogs that break the flow.
+    const url = typeof args[0] === 'string' ? args[0] : (args[0] as Request)?.url ?? ''
+    if (url.includes('/api/agent')) {
       return response;
     }
 
@@ -18,19 +26,14 @@ const fetchWrapper = async (...args) => {
 
       if (contentType.includes("text/html")) {
         const html = await response.text();
-
-        // Replace entire current page with returned HTML
         document.open();
         document.write(html);
         document.close();
-
         return;
       } else {
         alert("Backend returned Endpoint Not Found.");
       }
-    } // if backend is erroring out
-    else if (response.status >= 500) {
-      // ask the user to refresh(do it if they select auto)
+    } else if (response.status >= 500) {
       const shouldRefresh = confirm(
         "Backend is not responding. Click OK to refresh.",
       );
@@ -44,7 +47,12 @@ const fetchWrapper = async (...args) => {
 
     return response;
   } catch (error) {
-    // network failures
+    // For /api/agent calls, don't show confirm dialog — let caller handle retry
+    const url = typeof args[0] === 'string' ? args[0] : (args[0] as Request)?.url ?? ''
+    if (url.includes('/api/agent')) {
+      throw error; // Re-throw so aiAgent.ts catch block handles it
+    }
+
     const shouldRefresh = confirm(
       "Cannot connect to backend. Click OK to refresh.",
     );

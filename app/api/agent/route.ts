@@ -196,6 +196,22 @@ async function submitTask(body: any) {
     body: JSON.stringify(payload),
   })
 
+  // Handle upstream rate limiting on submit
+  if (submitRes.status === 429) {
+    const retryAfter = submitRes.headers.get('Retry-After') || '5'
+    return NextResponse.json(
+      {
+        success: false,
+        response: { status: 'error', result: {}, message: 'Rate limited. Please wait a moment and try again.' },
+        error: 'Rate limited. Please wait a moment and try again.',
+      },
+      {
+        status: 429,
+        headers: { 'Retry-After': retryAfter },
+      }
+    )
+  }
+
   if (!submitRes.ok) {
     const submitText = await submitRes.text()
     let errorMsg = `Task submit failed with status ${submitRes.status}`
@@ -239,6 +255,18 @@ async function pollTask(task_id: string) {
       'x-api-key': LYZR_API_KEY,
     },
   })
+
+  // Handle upstream rate limiting — pass 429 through so client can back off
+  if (pollRes.status === 429) {
+    const retryAfter = pollRes.headers.get('Retry-After') || '5'
+    return NextResponse.json(
+      { status: 'processing' },
+      {
+        status: 429,
+        headers: { 'Retry-After': retryAfter },
+      }
+    )
+  }
 
   if (!pollRes.ok) {
     const pollText = await pollRes.text()

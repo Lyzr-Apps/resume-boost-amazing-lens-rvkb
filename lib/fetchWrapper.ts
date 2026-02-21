@@ -8,6 +8,11 @@ const fetchWrapper = async (...args) => {
       return;
     }
 
+    // Handle 429 rate limit — return the response so callers can handle retry
+    if (response.status === 429) {
+      return response;
+    }
+
     if (response.status == 404) {
       const contentType = response.headers.get("content-type") || "";
 

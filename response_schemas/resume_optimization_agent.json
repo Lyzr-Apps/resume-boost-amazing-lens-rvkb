@@ -1,0 +1,42 @@
+{
+  "agent_name": "Resume Optimization Agent",
+  "agent_id": "699964710fc64800c899bc30",
+  "agent_type": "json",
+  "accessor": "json",
+  "has_module_outputs": false,
+  "response_schema": {
+    "keyword_alignment": {
+      "matched_keywords": ["string"],
+      "missing_keywords": ["string"],
+      "suggestions": ["string"]
+    },
+    "bullet_improvements": [
+      {
+        "original": "string",
+        "improved": "string"
+      }
+    ],
+    "impact_quantification": [
+      {
+        "achievement": "string",
+        "suggestion": "string"
+      }
+    ],
+    "action_verbs": [
+      {
+        "weak_verb": "string",
+        "stronger_verb": "string",
+        "context": "string"
+      }
+    ],
+    "iot_projects": [
+      {
+        "title": "string",
+        "description": "string",
+        "estimated_time": "string",
+        "skills": ["string"],
+        "relevance": "string"
+      }
+    ]
+  }
+}
